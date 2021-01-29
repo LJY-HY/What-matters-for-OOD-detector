@@ -8,7 +8,6 @@ from tqdm import tqdm
 import argparse
 from utils.arguments import get_arguments
 from utils.utils import *
-from ptflops import get_model_complexity_info
 
 def main():
     # argument parsing
