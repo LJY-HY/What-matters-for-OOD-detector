@@ -2,7 +2,6 @@ import argparse
 
 def get_arguments():
     parser = argparse.ArgumentParser(description = 'Training Arguments')
-    parser_temp = argparse.ArgumentParser()
     parser.add_argument('--gpu_id', default='0', type=int, help='id(s) for CUDA_VISIBLE_DEVICES')
     parser.add_argument('--dataset', default='cifar10', type=str, choices=['cifar10', 'cifar100', 'SVHN', 'imagenet'], help = 'dataset choice')
     parser.add_argument('--arch', default = 'ResNet18', type=str, choices = ['MobileNet','DenseNet','ResNet18','ResNet34','ResNet50','ResNet101','WideResNet28_2','WideResNet28_10','WideResNet40_2','WideResNet40_4','EfficientNet'])
@@ -16,13 +15,13 @@ def get_arguments():
     parser.add_argument('--warmup',action='store_true')
     parser.add_argument('--BN','--batch_normalization',action='store_false')
     parser.add_argument('--nesterov',action='store_false')
+    parser.add_argument('--tuning',action='store_true')
     parser.add_argument('--trial', default = '0', type=str)
     args = parser.parse_args()
     return args
 
 def get_MSP_detector_arguments():
     parser = argparse.ArgumentParser(description = 'Detecting OOD Arguments')
-    parser_temp = argparse.ArgumentParser()
     parser.add_argument('--gpu_id', default='0', type=int, help='id(s) for CUDA_VISIBLE_DEVICES')
     parser.add_argument('--in_dataset', default='cifar10', type=str, choices=['cifar10', 'cifar100', 'svhn'], help = 'in_distribution dataset')
     parser.add_argument('--out_dataset', default='', type=str, choices=['cifar10', 'cifar100', 'svhn', 'LSUN','LSUN_FIX', 'TinyImagenet', 'TinyImagenet_FIX'], help = 'dataset choice')
@@ -35,7 +34,6 @@ def get_MSP_detector_arguments():
 
 def get_ODIN_detector_arguments():
     parser = argparse.ArgumentParser(description = 'Detecting OOD Arguments')
-    parser_temp = argparse.ArgumentParser()
     parser.add_argument('--gpu_id', default='0', type=int, help='id(s) for CUDA_VISIBLE_DEVICES')
     parser.add_argument('--in_dataset', default='cifar10', type=str, choices=['cifar10', 'cifar100', 'svhn'], help = 'in_distribution dataset')
     parser.add_argument('--out_dataset', default='', type=str, choices=['cifar10', 'cifar100', 'svhn', 'LSUN','LSUN_FIX', 'TinyImagenet', 'TinyImagenet_FIX'], help = 'dataset choice')
