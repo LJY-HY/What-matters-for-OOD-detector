@@ -33,4 +33,9 @@ def svhn(args):
 
     train_dataloader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
     test_dataloader = DataLoader(test_10000_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+    if args.tuning:
+        val_dataset, test_dataset = random_split(test_10000_dataset,[1000,9000])
+        val_dataloader = DataLoader(val_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        return train_dataloader, val_dataloader, test_dataloader
     return train_dataloader, test_dataloader

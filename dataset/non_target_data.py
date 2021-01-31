@@ -20,7 +20,11 @@ def LSUN(args):
     dataroot = os.path.expanduser(os.path.join('/home/esoc/repo/datasets/pytorch/', 'LSUN_resize'))
     testsetout = datasets.ImageFolder(root=dataroot, transform=transform_test)
     test_loader = torch.utils.data.DataLoader(testsetout, batch_size=args.batch_size, shuffle=False, num_workers=1)
-
+    if args.tuning:
+        val_dataset, test_dataset = random_split(testsetout,[1000,9000])                                            # 이게 1000,9000으로 나누어지는지 확인해야함
+        val_dataloader = DataLoader(val_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        return 1, val_dataloader, test_dataloader
     return 1, test_loader
 
 def TinyImagenet(args):
@@ -31,5 +35,9 @@ def TinyImagenet(args):
     dataroot = os.path.expanduser(os.path.join('/home/esoc/repo/datasets/pytorch/', 'Imagenet_resize'))
     testsetout = datasets.ImageFolder(dataroot, transform=transform_test)
     test_loader = torch.utils.data.DataLoader(testsetout, batch_size=args.batch_size, shuffle=False, num_workers=1)
-
+    if args.tuning:
+        val_dataset, test_dataset = random_split(testsetout,[1000,9000])
+        val_dataloader = DataLoader(val_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        return 1, val_dataloader, test_dataloader
     return 1, test_loader

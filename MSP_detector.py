@@ -19,7 +19,7 @@ from dataset.cifar import *
 from dataset.svhn import *
 from dataset.non_target_data import *
 
-def main():
+def main(args):
     # argument parsing
     args = argparse.ArgumentParser()
     args = get_MSP_detector_arguments()
