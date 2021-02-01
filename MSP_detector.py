@@ -36,13 +36,13 @@ def main():
 
     # model setting
     if args.arch in ['MobileNet']:
-        net = globals()[args.arch](num_classes = args.num_classes).to(args.device)
+        net = globals()[args.arch](args).to(args.device)
     elif args.arch in ['ResNet18','ResNet34','ResNet50','ResNet101']:
-        net = globals()[args.arch](num_classes = args.num_classes).to(args.device)
+        net = globals()[args.arch](args).to(args.device)
     elif args.arch in ['WideResNet28_2','WideResNet28_10','WideResNet40_2','WideResNet40_4']:
-        net = globals()[args.arch](num_classes = args.num_classes).to(args.device)
+        net = globals()[args.arch](args).to(args.device)
     elif args.arch in ['DenseNet']:
-        net = globals()[args.arch](num_classes = args.num_classes).to(args.device)
+        net = globals()[args.arch](args).to(args.device)
     elif args.arch in ['EfficientNet']:
         pass
    

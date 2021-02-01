@@ -48,7 +48,7 @@ class NetworkBlock(nn.Module):
 
 
 class WideResNet(nn.Module):
-    def __init__(self, depth=34, num_classes=10, widen_factor=10, dropRate=0.0):
+    def __init__(self, args, depth=34, widen_factor=10, dropRate=0.0):
         super(WideResNet, self).__init__()
         nChannels = [16, 16 * widen_factor, 32 * widen_factor, 64 * widen_factor]
         assert ((depth - 4) % 6 == 0)
@@ -68,7 +68,7 @@ class WideResNet(nn.Module):
         # global average pooling and classifier
         self.bn1 = nn.BatchNorm2d(nChannels[3])
         self.relu = nn.ReLU(inplace=True)
-        self.fc = nn.Linear(nChannels[3], num_classes)
+        self.fc = nn.Linear(nChannels[3], args.num_classes)
         self.nChannels = nChannels[3]
 
         for m in self.modules():
@@ -91,17 +91,17 @@ class WideResNet(nn.Module):
         out = out.view(-1, self.nChannels)
         return self.fc(out)
 
-def WideResNet28_2(depth=28, num_classes=10, widen_factor=2):
-    return WideResNet(depth, num_classes, widen_factor)
+def WideResNet28_2(args, depth=28, widen_factor=2):
+    return WideResNet(depth, args.num_classes, widen_factor)
 
-def WideResNet28_4(depth=28, num_classes=10, widen_factor=4):
-    return WideResNet(depth, num_classes, widen_factor)
+def WideResNet28_4(args, depth=28, widen_factor=4):
+    return WideResNet(depth, args.num_classes, widen_factor)
 
-def WideResNet28_10(depth=28, num_classes=10, widen_factor=10):
-    return WideResNet(depth, num_classes, widen_factor)
+def WideResNet28_10(args, depth=28, widen_factor=10):
+    return WideResNet(depth, args.num_classes, widen_factor)
 
-def WideResNet40_2(depth=40, num_classes=10, widen_factor=2):
-    return WideResNet(depth, num_classes, widen_factor)
+def WideResNet40_2(args, depth=40, widen_factor=2):
+    return WideResNet(depth, args.num_classes, widen_factor)
 
-def WideResNet40_4(depth=40, num_classes=10, widen_factor=4):
-    return WideResNet(depth, num_classes, widen_factor)
+def WideResNet40_4(args, depth=40, widen_factor=4):
+    return WideResNet(depth, args.num_classes, widen_factor)
