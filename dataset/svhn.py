@@ -17,14 +17,14 @@ def svhn(args):
         transforms.RandomHorizontalFlip(),
         transforms.RandomCrop(size=32, padding=int(32*0.125)),
         transforms.ToTensor(),
-        transforms.Normalize(mean = svhn_mean, std = svhn_std)
-        # transforms.Normalize(mean=cifar100_mean, std = cifar10_std)
+        # transforms.Normalize(mean = svhn_mean, std = svhn_std)
+        transforms.Normalize(mean=cifar10_mean, std = cifar10_std)
     ])
 
     transform_test = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean = svhn_mean, std = svhn_std)
-        # transforms.Normalize(mean=cifar100_mean, std = cifar10_std)
+        # transforms.Normalize(mean = svhn_mean, std = svhn_std)
+        transforms.Normalize(mean=cifar10_mean, std = cifar10_std)
     ])
 
     train_dataset = datasets.SVHN(root = '/home/esoc/repo/datasets/pytorch/svhn', split = 'train', transform = transform_train, download=True)
@@ -33,4 +33,9 @@ def svhn(args):
 
     train_dataloader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
     test_dataloader = DataLoader(test_10000_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+    if args.tuning:
+        val_dataset, test_dataset = random_split(test_10000_dataset,[1000,9000])
+        val_dataloader = DataLoader(val_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        return train_dataloader, val_dataloader, test_dataloader
     return train_dataloader, test_dataloader

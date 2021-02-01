@@ -3,6 +3,7 @@ from PIL import Image
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision import transforms
+from torch.utils.data import random_split
 
 cifar10_mean = (0.4914, 0.4823, 0.4466)
 cifar10_std = (0.2471, 0.2435, 0.2616)
@@ -27,6 +28,11 @@ def cifar10(args):
 
     train_dataloader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
     test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+    if args.tuning:
+        val_dataset, test_dataset = random_split(test_dataset,[1000,9000])
+        val_dataloader = DataLoader(val_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        return train_dataloader, val_dataloader, test_dataloader
     return train_dataloader, test_dataloader
 
 def cifar100(args):
@@ -47,4 +53,9 @@ def cifar100(args):
 
     train_dataloader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
     test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+    if args.tuning:
+        val_dataset, test_dataset = random_split(test_dataset,[1000,9000])
+        val_dataloader = DataLoader(val_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
+        return train_dataloader, val_dataloader, test_dataloader
     return train_dataloader, test_dataloader
