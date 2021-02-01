@@ -1,4 +1,6 @@
 *__pycache__*
-./workspace/*
-./checkpoint/*
+workspace/*
+checkpoint/*
 *.pyc
+*.sh
+sh/*
