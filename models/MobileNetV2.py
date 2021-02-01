@@ -71,8 +71,8 @@ class MobileNetV2(nn.Module):
         out = self.linear(out)
         return out
 
-def MobileNet(num_classes=10,pretrained=False):
-    model = MobileNetV2(num_classes)
+def MobileNet(args,pretrained=False):
+    model = MobileNetV2(args.num_classes)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls['mobilenet_v2'])
         model.load_state_dict(state_dict)
