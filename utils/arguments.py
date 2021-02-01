@@ -23,7 +23,7 @@ def get_MSP_detector_arguments():
     parser = argparse.ArgumentParser(description = 'Detecting OOD Arguments')
     parser.add_argument('--gpu_id', default='0', type=int, help='id(s) for CUDA_VISIBLE_DEVICES')
     parser.add_argument('--in_dataset', default='cifar10', type=str, choices=['cifar10', 'cifar100', 'svhn'], help = 'in_distribution dataset')
-    parser.add_argument('--out_dataset', default='', type=str, choices=['cifar10', 'cifar100', 'svhn', 'LSUN','LSUN_FIX', 'TinyImagenet', 'TinyImagenet_FIX'], help = 'dataset choice')
+    parser.add_argument('--out_dataset', default='', type=str, choices=['cifar10', 'cifar100', 'svhn', 'LSUN', 'LSUN_FIX', 'TinyImagenet', 'TinyImagenet_FIX'], help = 'dataset choice')
     parser.add_argument('--arch', default = 'ResNet18', type=str, choices = ['MobileNet','DenseNet','ResNet18','ResNet34','ResNet50','ResNet101','WideResNet28_2','WideResNet28_10','WideResNet40_2','WideResNet40_4','EfficientNet'])
     parser.add_argument('--batch_size', default=128, type=int, choices=[64,128,256])
     parser.add_argument('--tuning',action='store_true')

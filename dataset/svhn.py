@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision import transforms
@@ -29,12 +30,12 @@ def svhn(args):
 
     train_dataset = datasets.SVHN(root = '/home/esoc/repo/datasets/pytorch/svhn', split = 'train', transform = transform_train, download=True)
     test_dataset = datasets.SVHN(root = '/home/esoc/repo/datasets/pytorch/svhn', split = 'test', transform = transform_test, download=True)
-    test_10000_dataset, _ = random_split(test_dataset,[10000,16032])
+    test_10000_dataset, _ = random_split(test_dataset,[10000,16032],generator=torch.Generator().manual_seed(0))
 
     train_dataloader = DataLoader(train_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
     test_dataloader = DataLoader(test_10000_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
     if args.tuning:
-        val_dataset, test_dataset = random_split(test_10000_dataset,[1000,9000])
+        val_dataset, test_dataset = random_split(test_10000_dataset,[1000,9000],generator=torch.Generator().manual_seed(0))
         val_dataloader = DataLoader(val_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
         test_dataloader = DataLoader(test_dataset, batch_size = args.batch_size, shuffle = True, num_workers = 8)
         return train_dataloader, val_dataloader, test_dataloader

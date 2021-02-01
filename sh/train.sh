@@ -9,7 +9,7 @@ do
     #     --trial ${trial}
     # done
 
-    # for bsz in 64 128 256 512
+    # for bsz in 64 256 512
     # do
     #     python3 main.py --batch_size ${bsz} \
     #     --trial ${trial}
