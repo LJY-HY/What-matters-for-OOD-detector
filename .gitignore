@@ -1,4 +1,4 @@
-*__pycache__*
+utils/__pycache__/*
 workspace/*
 checkpoint/*
 *.pyc

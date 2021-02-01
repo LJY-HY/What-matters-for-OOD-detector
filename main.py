@@ -29,7 +29,7 @@ def main():
     optimizer, scheduler = get_optim_scheduler(args,net)
        
     CE_loss = nn.CrossEntropyLoss()
-    path = './checkpoint/'+args.dataset+'/'+args.arch+'_'+str(args.batch_size)+'_'+args.optimizer+'_'+args.scheduler+'_'+str(args.lr)[2:]+'trial_'+args.trial
+    path = './checkpoint/'+args.dataset+'/'+args.arch+'_'+str(args.epoch)+'_'+str(args.batch_size)+'_'+args.optimizer+'_'+args.scheduler+'_'+str(args.lr)[2:]+'_trial_'+args.trial
     best_acc=0
     for epoch in range(args.epoch):
         train(args, net, train_dataloader, optimizer, scheduler, CE_loss, epoch)
