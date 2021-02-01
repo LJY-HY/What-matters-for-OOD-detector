@@ -3,7 +3,19 @@ date | tee resnet18_cifar10.txt
 
 for trial in {0..4}
 do
-    python3 main.py --optimizer Adam \
+    # for epochs in 100 200 300
+    # do
+    #     python3 main.py --epoch ${epochs} \
+    #     --trial ${trial}
+    # done
+
+    # for bsz in 64 128 256 512
+    # do
+    #     python3 main.py --batch_size ${bsz} \
+    #     --trial ${trial}
+    # done
+
+    python3 main.py --optimizer Nesterov \
     --trial ${trial}
 done
 

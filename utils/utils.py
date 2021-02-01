@@ -22,9 +22,11 @@ def get_architecture(args):
 def get_optim_scheduler(args,net):
     if args.optimizer == 'SGD':
         optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=args.wd)
-    if args.optimizer == 'Adam':
+    elif args.optimizer == 'Nesterov':
+        optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=args.wd, nesterov=True)
+    elif args.optimizer == 'Adam':
         optimizer = optim.Adam(net.parameters(), lr = args.lr)
-    if args.optimizer == 'LARS':
+    elif args.optimizer == 'LARS':
         pass
 
     if args.scheduler == 'MultiStepLR':
