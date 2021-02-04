@@ -71,6 +71,39 @@ class MobileNetV2(nn.Module):
         out = self.linear(out)
         return out
 
+    def feature_list(self,x):
+        out_list = []
+        out = F.relu(self.bn1(self.conv1(x)))
+        out_list.append(out)
+        out = self.layers(out)
+        out_list.append(out)
+        out = F.relu(self.bn2(self.conv2(out)))
+        out_list.append(out)
+        out = F.avg_pool2d(out, 4)
+        out = out.view(out.size(0), -1)
+        out = self.linear(out)
+
+        return out,out_list
+
+    def intermediate_forward(self,x,layer_index):
+        out = F.relu(self.bn1(self.conv1(x)))
+        if layer_index == 1:
+            out = self.layers(out)
+        elif layer_index == 2:
+            out = self.layers(out)
+            out = F.relu(self.bn2(self.conv2(out)))
+        return out
+
+    def penultimate_forward(self,x):
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.layers(out)
+        out = F.relu(self.bn2(self.conv2(out)))
+        penultimate = out
+        out = F.avg_pool2d(out, 4)
+        out = out.view(out.size(0), -1)
+        out = self.linear(out)
+        return out, penultimate
+
 def MobileNet(args,pretrained=False):
     model = MobileNetV2(args.num_classes)
     if pretrained:

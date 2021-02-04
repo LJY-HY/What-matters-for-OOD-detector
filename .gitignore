@@ -4,3 +4,5 @@ checkpoint/*
 *.pyc
 *.sh
 sh/*
+output/
+utils/__pycache__/*

@@ -40,12 +40,12 @@ def cifar100(args):
         transforms.RandomHorizontalFlip(),
         transforms.RandomCrop(size=32, padding=int(32*0.125)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=cifar100_mean, std=cifar100_std)
+        transforms.Normalize(mean=cifar10_mean, std=cifar10_std)
     ])
 
     transform_test = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=cifar100_mean, std=cifar100_std)
+        transforms.Normalize(mean=cifar10_mean, std=cifar10_std)
     ])
 
     train_dataset = datasets.CIFAR100(root = '/home/esoc/repo/datasets/pytorch/cifar100', train=True, transform = transform_train, download=True)
