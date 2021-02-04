@@ -91,35 +91,35 @@ def main():
     m_list = [0.0, 0.01, 0.005, 0.002, 0.0014, 0.001, 0.0005]
     out_dist_list = ['svhn', 'LSUN', 'TinyImagenet','cifar100']
 
-    # for magnitude in m_list:
-    #     print('Noise: '+str(magnitude))
-    #     for i in range(num_output):
-    #         M_in = lib_generation.get_Mahalanobis_score(net, in_dataloader_test, args.num_classes, args.outf, \
-    #                                                     True, args.arch, sample_mean, precision, i, magnitude)
-    #         M_in = np.asarray(M_in, dtype=np.float32)
-    #         if i == 0:
-    #             Mahalanobis_in = M_in.reshape((M_in.shape[0], -1))
-    #         else:
-    #             Mahalanobis_in = np.concatenate((Mahalanobis_in, M_in.reshape((M_in.shape[0], -1))), axis=1)
+    for magnitude in m_list:
+        print('Noise: '+str(magnitude))
+        for i in range(num_output):
+            M_in = lib_generation.get_Mahalanobis_score(net, in_dataloader_test, args.num_classes, args.outf, \
+                                                        True, args.arch, sample_mean, precision, i, magnitude)
+            M_in = np.asarray(M_in, dtype=np.float32)
+            if i == 0:
+                Mahalanobis_in = M_in.reshape((M_in.shape[0], -1))
+            else:
+                Mahalanobis_in = np.concatenate((Mahalanobis_in, M_in.reshape((M_in.shape[0], -1))), axis=1)
     
-    #     for out_dist in out_dist_list:
-    #         _, out_test_loader = globals()[out_dist](args)
-    #         print('Out-distribution: ' + out_dist) 
-    #         for i in range(num_output):
-    #             M_out = lib_generation.get_Mahalanobis_score(net, out_test_loader, args.num_classes, args.outf, \
-    #                                                             False, args.arch, sample_mean, precision, i, magnitude)
-    #             M_out = np.asarray(M_out, dtype=np.float32)
-    #             if i == 0:
-    #                 Mahalanobis_out = M_out.reshape((M_out.shape[0], -1))
-    #             else:
-    #                 Mahalanobis_out = np.concatenate((Mahalanobis_out, M_out.reshape((M_out.shape[0], -1))), axis=1)
+        for out_dist in out_dist_list:
+            _, out_test_loader = globals()[out_dist](args)
+            print('Out-distribution: ' + out_dist) 
+            for i in range(num_output):
+                M_out = lib_generation.get_Mahalanobis_score(net, out_test_loader, args.num_classes, args.outf, \
+                                                                False, args.arch, sample_mean, precision, i, magnitude)
+                M_out = np.asarray(M_out, dtype=np.float32)
+                if i == 0:
+                    Mahalanobis_out = M_out.reshape((M_out.shape[0], -1))
+                else:
+                    Mahalanobis_out = np.concatenate((Mahalanobis_out, M_out.reshape((M_out.shape[0], -1))), axis=1)
 
-    #         Mahalanobis_in = np.asarray(Mahalanobis_in, dtype=np.float32)
-    #         Mahalanobis_out = np.asarray(Mahalanobis_out, dtype=np.float32)
-    #         Mahalanobis_data, Mahalanobis_labels = lib_generation.merge_and_generate_labels(Mahalanobis_out, Mahalanobis_in)
-    #         file_name = os.path.join(args.outf, 'Mahalanobis_%s_%s_%s.npy' % (str(magnitude), args.in_dataset , out_dist))
-    #         Mahalanobis_data = np.concatenate((Mahalanobis_data, Mahalanobis_labels), axis=1)
-    #         np.save(file_name, Mahalanobis_data)
+            Mahalanobis_in = np.asarray(Mahalanobis_in, dtype=np.float32)
+            Mahalanobis_out = np.asarray(Mahalanobis_out, dtype=np.float32)
+            Mahalanobis_data, Mahalanobis_labels = lib_generation.merge_and_generate_labels(Mahalanobis_out, Mahalanobis_in)
+            file_name = os.path.join(args.outf, 'Mahalanobis_%s_%s_%s.npy' % (str(magnitude), args.in_dataset , out_dist))
+            Mahalanobis_data = np.concatenate((Mahalanobis_data, Mahalanobis_labels), axis=1)
+            np.save(file_name, Mahalanobis_data)
    
     dataset_list = [args.in_dataset]
     score_list = ['Mahalanobis_0.0', 'Mahalanobis_0.01', 'Mahalanobis_0.005', 'Mahalanobis_0.002', 'Mahalanobis_0.0014', 'Mahalanobis_0.001', 'Mahalanobis_0.0005']
