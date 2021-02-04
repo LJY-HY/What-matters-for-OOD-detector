@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from models.MobileNetV2 import *
 from models.ResNet import *
 from models.WideResNet import *
@@ -37,3 +38,61 @@ def get_optim_scheduler(args,net):
     #     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer,T_max=args.epoch)
 
     return optimizer, scheduler
+
+class Rotation(nn.Module):
+    def __init__(self, max_range = 4):
+        super(Rotation, self).__init__()
+        self.max_range = max_range
+
+    def forward(self, input, aug_index=None):
+        _device = input.device
+
+        _, _, H, W = input.size()
+
+        if aug_index is None:
+            aug_index = np.random.randint(1,4)
+
+            output = torch.rot90(input, aug_index, (2, 3))
+
+        else:
+            aug_index = aug_index % self.max_range
+            output = torch.rot90(input, aug_index, (2, 3))
+
+        return output
+
+class CutPerm(nn.Module):
+    def __init__(self, max_range = 4):
+        super(CutPerm, self).__init__()
+        self.max_range = max_range
+
+    def forward(self, input, aug_index=None):
+        _device = input.device
+
+        _, _, H, W = input.size()
+
+        if aug_index is None:
+            aug_index = np.random.randint(1,4)
+
+            output = self._cutperm(input, aug_index)
+
+        else:
+            aug_index = aug_index % self.max_range
+            output = self._cutperm(input, aug_index)
+
+        return output
+
+    def _cutperm(self, inputs, aug_index):
+
+        _, _, H, W = inputs.size()
+        h_mid = int(H / 2)
+        w_mid = int(W / 2)
+
+        jigsaw_h = aug_index // 2
+        jigsaw_v = aug_index % 2
+
+        if jigsaw_h == 1:
+            inputs = torch.cat((inputs[:, :, h_mid:, :], inputs[:, :, 0:h_mid, :]), dim=2)
+        if jigsaw_v == 1:
+            inputs = torch.cat((inputs[:, :, :, w_mid:], inputs[:, :, :, 0:w_mid]), dim=3)
+
+        return inputs
