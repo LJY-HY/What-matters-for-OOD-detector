@@ -26,7 +26,7 @@ def svhn(args):
     transform_test = transforms.Compose([
         transforms.ToTensor(),
         # transforms.Normalize(mean = svhn_mean, std = svhn_std)
-        transforms.Normalize(mean=cifar10_mean, std = cifar10_std)
+        transforms.Normalize(mean=cifar100_mean, std = cifar100_std)
     ])
 
     train_dataset = datasets.SVHN(root = '/home/esoc/repo/datasets/pytorch/svhn', split = 'train', transform = transform_train, download=True)

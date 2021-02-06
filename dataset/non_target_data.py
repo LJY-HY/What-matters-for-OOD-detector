@@ -15,7 +15,7 @@ cifar100_std = (0.2675, 0.2565, 0.2761)
 def LSUN(args):
     transform_test = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=cifar10_mean, std=cifar10_std),
+        transforms.Normalize(mean=cifar100_mean, std=cifar100_std),
     ])
     dataroot = os.path.expanduser(os.path.join('/home/esoc/repo/datasets/pytorch/', 'LSUN_resize'))
     testsetout = datasets.ImageFolder(root=dataroot, transform=transform_test)
@@ -32,7 +32,7 @@ def LSUN(args):
 def LSUN_FIX(args):
     transform_test = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=cifar10_mean, std=cifar10_std),
+        transforms.Normalize(mean=cifar100_mean, std=cifar100_std),
     ])
     dataroot = os.path.expanduser(os.path.join('/home/esoc/repo/datasets/pytorch/', 'LSUN_pil'))
     testsetout = datasets.ImageFolder(root=dataroot, transform=transform_test)
@@ -49,7 +49,7 @@ def LSUN_FIX(args):
 def TinyImagenet(args):
     transform_test = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=cifar10_mean, std=cifar10_std),
+        transforms.Normalize(mean=cifar100_mean, std=cifar100_std),
     ])
     dataroot = os.path.expanduser(os.path.join('/home/esoc/repo/datasets/pytorch/', 'Imagenet_resize'))
     testsetout = datasets.ImageFolder(dataroot, transform=transform_test)
@@ -66,7 +66,7 @@ def TinyImagenet(args):
 def TinyImagenet_FIX(args):
     transform_test = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=cifar10_mean, std=cifar10_std),
+        transforms.Normalize(mean=cifar100_mean, std=cifar100_std),
     ])
     dataroot = os.path.expanduser(os.path.join('/home/esoc/repo/datasets/pytorch/', 'Imagenet_pil'))
     testsetout = datasets.ImageFolder(dataroot, transform=transform_test)
