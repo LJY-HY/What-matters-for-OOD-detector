@@ -24,7 +24,7 @@ def get_optim_scheduler(args,net):
     if args.optimizer == 'SGD':
         optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=args.wd)
     elif args.optimizer == 'Nesterov':
-        optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=args.wd, nesterov=True)
+        optimizer = optim.SGD(net.parameters(), lr = args.lr, momentum=0.9, nesterov= True, weight_decay=args.wd)
     elif args.optimizer == 'Adam':
         optimizer = optim.Adam(net.parameters(), lr = args.lr)
     elif args.optimizer == 'AdamW':

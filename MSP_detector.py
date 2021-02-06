@@ -62,9 +62,6 @@ def main():
     score_path = './workspace/softmax_scores/'
     os.makedirs(score_path,exist_ok=True)
 
-    tnr_best=0.
-    T_temp=1
-    ep_temp=0
     test_loss = 0
     acc = 0
     f1 = open(score_path+"confidence_In.txt", 'w')

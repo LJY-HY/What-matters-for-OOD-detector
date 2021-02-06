@@ -43,7 +43,7 @@ def cifar100(args):
         transforms.RandomHorizontalFlip(),
         transforms.RandomCrop(size=32, padding=int(32*0.125)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=cifar100_mean, std=cifar100_std)
+        transforms.Normalize(mean=cifar10_mean, std=cifar10_std)
     ])
 
     transform_test = transforms.Compose([

@@ -54,6 +54,8 @@ def main():
         pass
 
     # optimizer/ scheduler setting
+    # 이건 SGD이던 Adam이던 상관없음. 어차피 net의 weight/bias는 바꾸지 않을꺼고 
+    # input-preprocessing도 sign값만 가지고 하기 때문에
     optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
 
     # model loading
