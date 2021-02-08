@@ -89,15 +89,12 @@ def main():
         # Tuning
         for T in T_candidate:
             for ep in e_candidate:
-                print('T       : ',T)
-                print('epsilon : ',ep)
                 ##### Open files to save confidence score #####
                 f1 = open(score_path+"confidence_Base_In.txt", 'w')
                 f2 = open(score_path+"confidence_Base_Out.txt", 'w')
                 g1 = open(score_path+"confidence_In.txt", 'w')
                 g2 = open(score_path+"confidence_Out.txt", 'w')
                 # processing in-distribution data
-                p_bar = tqdm(range(in_dataloader_val.__len__()))
                 for batch_idx, data in enumerate(in_dataloader_val):
                     images, _ = data
                     inputs = Variable(images.to(args.device),requires_grad=True)
@@ -142,18 +139,10 @@ def main():
                     nnOutputs = nnOutputs.transpose()
                     for maxvalues in np.max(nnOutputs,axis=1):
                         g1.write("{}\n".format(maxvalues))
-                    p_bar.set_description("Test Epoch: {epoch}/{epochs:4}. Iter: {batch:4}/{iter:4}.".format(
-                        epoch=1,
-                        epochs=1,
-                        batch=batch_idx + 1,
-                        iter=in_dataloader_val.__len__())
-                    )
-                    p_bar.update()
-                p_bar.close()
+                   
                 f1.close()
                 g1.close()
                 # Processing out-of-distribution data
-                p_bar = tqdm(range(in_dataloader_val.__len__()))
                 for batch_idx, data in enumerate(out_dataloader_val):
                     images, _ = data
                     if args.tuning_strategy is ('Aug_Rot' or 'Aug_Perm'):
@@ -200,14 +189,6 @@ def main():
                     nnOutputs = nnOutputs.transpose()
                     for maxvalues in np.max(nnOutputs,axis=1):
                         g2.write("{}\n".format(maxvalues))
-                    p_bar.set_description("Test Epoch: {epoch}/{epochs:4}. Iter: {batch:4}/{iter:4}.".format(
-                        epoch=1,
-                        epochs=1,
-                        batch=batch_idx + 1,
-                        iter=in_dataloader_val.__len__())
-                    )
-                    p_bar.update()
-                p_bar.close()
                 f2.close()
                 g2.close()
                 # calculate metrics
@@ -228,7 +209,6 @@ def main():
     g1 = open(score_path+"confidence_In.txt", 'w')
     g2 = open(score_path+"confidence_Out.txt", 'w')
     # processing with tuned T,epsilon
-    p_bar = tqdm(range(in_dataloader_test.__len__()))
     for batch_idx, data in enumerate(in_dataloader_test):
         images, _ = data
         inputs = Variable(images.to(args.device),requires_grad=True)
@@ -273,18 +253,9 @@ def main():
         nnOutputs = nnOutputs.transpose()
         for maxvalues in np.max(nnOutputs,axis=1):
             g1.write("{}\n".format(maxvalues))
-        p_bar.set_description("Test Epoch: {epoch}/{epochs:4}. Iter: {batch:4}/{iter:4}.".format(
-            epoch=1,
-            epochs=1,
-            batch=batch_idx + 1,
-            iter=in_dataloader_test.__len__())
-        )
-        p_bar.update()
-    p_bar.close()
     f1.close()
     g1.close()
     # Processing out-of-distribution data
-    p_bar = tqdm(range(out_dataloader_test.__len__()))
     for batch_idx, data in enumerate(out_dataloader_test):
         images, _ = data
         inputs = Variable(images.to(args.device),requires_grad=True)
@@ -329,14 +300,6 @@ def main():
         nnOutputs = nnOutputs.transpose()
         for maxvalues in np.max(nnOutputs,axis=1):
             g2.write("{}\n".format(maxvalues))
-        p_bar.set_description("Test Epoch: {epoch}/{epochs:4}. Iter: {batch:4}/{iter:4}.".format(
-            epoch=1,
-            epochs=1,
-            batch=batch_idx + 1,
-            iter=in_dataloader_val.__len__())
-        )
-        p_bar.update()
-    p_bar.close()
     f2.close()
     g2.close()
     # calculate metrics

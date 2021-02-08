@@ -3,7 +3,7 @@ import argparse
 def get_arguments():
     parser = argparse.ArgumentParser(description = 'Training Arguments')
     parser.add_argument('--gpu_id', default='0', type=int, help='id(s) for CUDA_VISIBLE_DEVICES')
-    parser.add_argument('--dataset', default='cifar10', type=str, choices=['cifar10', 'cifar100', 'SVHN', 'imagenet'], help = 'dataset choice')
+    parser.add_argument('--in_dataset', default='cifar10', type=str, choices=['cifar10', 'cifar100', 'SVHN', 'imagenet'], help = 'dataset choice')
     parser.add_argument('--arch', default = 'ResNet18', type=str, choices = ['MobileNet','DenseNet','ResNet18','ResNet34','ResNet50','ResNet101','WideResNet28_2','WideResNet28_10','WideResNet40_2','WideResNet40_4','EfficientNet'])
     parser.add_argument('--optimizer', default = 'SGD', type=str, choices = ['SGD','Nesterov','Adam','AdamW'])
     parser.add_argument('--lr','--learning-rate', default = 0.1, type=float, choices = [1.0,0.1,0.01, 0.001,0.0005,0.0002])

@@ -16,20 +16,20 @@ def main():
     args.device = torch.device('cuda',args.gpu_id)
 
     # dataset setting
-    if args.dataset in ['cifar10','svhn']:
+    if args.in_dataset in ['cifar10','svhn']:
         args.num_classes=10
-    elif args.dataset in ['cifar100']:
+    elif args.in_dataset in ['cifar100']:
         args.num_classes=100
 
     # Get Dataset
-    train_dataloader, test_dataloader = globals()[args.dataset](args)
+    train_dataloader, test_dataloader = globals()[args.in_dataset](args)
     # Get architecture
     net = get_architecture(args)
     # Get optimizer, scheduler
     optimizer, scheduler = get_optim_scheduler(args,net)
        
     CE_loss = nn.CrossEntropyLoss()
-    path = './checkpoint/'+args.dataset+'/'+args.arch+'_'+str(args.epoch)+'_'+str(args.batch_size)+'_'+args.optimizer+'_'+args.scheduler+'_'+str(args.lr)[2:]+'_trial_'+args.trial
+    path = './checkpoint/'+args.in_dataset+'/'+args.arch+'_'+str(args.epoch)+'_'+str(args.batch_size)+'_'+args.optimizer+'_'+args.scheduler+'_'+str(args.lr)[2:]+'_trial_'+args.trial
     best_acc=0
     for epoch in range(args.epoch):
         train(args, net, train_dataloader, optimizer, scheduler, CE_loss, epoch)
@@ -37,8 +37,8 @@ def main():
         scheduler.step()
         if best_acc<acc:
             best_acc = acc
-            if not os.path.isdir('checkpoint/'+args.dataset):
-                os.makedirs('checkpoint/'+args.dataset)
+            if not os.path.isdir('checkpoint/'+args.in_dataset):
+                os.makedirs('checkpoint/'+args.in_dataset)
             torch.save(net.state_dict(), path)
 
 def train(args, net, train_dataloader, optimizer, scheduler, CE_loss, epoch):

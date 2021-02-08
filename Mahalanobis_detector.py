@@ -89,7 +89,12 @@ def main():
     print('get sample mean and covariance')
     sample_mean, precision = lib_generation.sample_estimator(net, args.num_classes, feature_list, in_dataloader_train)
     m_list = [0.0, 0.01, 0.005, 0.002, 0.0014, 0.001, 0.0005]
-    out_dist_list = ['svhn', 'LSUN', 'TinyImagenet','cifar100']
+    if args.in_dataset == 'cifar10':
+        out_dist_list = ['svhn', 'LSUN', 'LSUN_FIX', 'TinyImagenet','TinyImagenet_FIX', 'cifar100']
+    elif args.in_dataset == 'svhn':
+        out_dist_list = ['cifar10', 'LSUN', 'LSUN_FIX', 'TinyImagenet','TinyImagenet_FIX', 'cifar100']
+    elif args.in_dataset == 'cifar100':
+        out_dist_list = ['svhn', 'LSUN', 'LSUN_FIX', 'TinyImagenet','TinyImagenet_FIX', 'cifar10']
 
     for magnitude in m_list:
         print('Noise: '+str(magnitude))
@@ -121,50 +126,53 @@ def main():
             Mahalanobis_data = np.concatenate((Mahalanobis_data, Mahalanobis_labels), axis=1)
             np.save(file_name, Mahalanobis_data)
    
-    dataset_list = [args.in_dataset]
     score_list = ['Mahalanobis_0.0', 'Mahalanobis_0.01', 'Mahalanobis_0.005', 'Mahalanobis_0.002', 'Mahalanobis_0.0014', 'Mahalanobis_0.001', 'Mahalanobis_0.0005']
 
     list_best_results, list_best_results_index = [], []
-    for dataset in dataset_list:
-        print('In-distribution: ', dataset)
-        outf = './output/' + args.arch + '_' + dataset + '/'
-        out_list = ['svhn', 'LSUN', 'TinyImagenet', 'cifar100']
-        if dataset == 'svhn':
-            out_list = ['cifar10', 'imagenet_resize', 'lsun_resize']
-
-        list_best_results_out, list_best_results_index_out = [], []
-        for out in out_list:
-            print('Out-of-distribution: ', out)
-            best_tnr, best_result, best_index = 0, 0, 0
-            for score in score_list:
-                total_X, total_Y = lib_regression.load_characteristics(score, dataset, out, outf)
-                X_val, Y_val, X_test, Y_test = lib_regression.block_split(total_X, total_Y, out)
-                X_train = np.concatenate((X_val[:500], X_val[1000:1500]))
-                Y_train = np.concatenate((Y_val[:500], Y_val[1000:1500]))
-                X_val_for_test = np.concatenate((X_val[500:1000], X_val[1500:]))
-                Y_val_for_test = np.concatenate((Y_val[500:1000], Y_val[1500:]))
-                lr = LogisticRegressionCV(n_jobs=-1).fit(X_train, Y_train)
-                y_pred = lr.predict_proba(X_train)[:, 1]
-                y_pred = lr.predict_proba(X_val_for_test)[:, 1]
-                results = lib_regression.detection_performance(lr, X_val_for_test, Y_val_for_test, outf)
-                if best_tnr < results['TNR']:
-                    best_tnr = results['TNR']
-                    best_index = score
-                    best_result = lib_regression.detection_performance(lr, X_test, Y_test, outf)
-                
-            list_best_results_out.append(best_result)
-            list_best_results_index_out.append(best_index)
-        list_best_results.append(list_best_results_out)
-        list_best_results_index.append(list_best_results_index_out)
+    print('In-distribution: ', args.in_dataset)
+    outf = './output/' + args.arch + '_' + args.in_dataset + '/'
+    if args.in_dataset == 'cifar10':
+        out_list = ['svhn', 'LSUN', 'LSUN_FIX', 'TinyImagenet', 'TinyImagenet_FIX', 'cifar100']
+    elif args.in_dataset == 'svhn':
+        out_list = ['cifar10', 'LSUN', 'LSUN_FIX', 'TinyImagenet', 'TinyImagenet_FIX', 'cifar100']
+    elif args.in_dataset == 'cifar100':
+        out_list = ['svhn', 'LSUN', 'LSUN_FIX', 'TinyImagenet', 'TinyImagenet_FIX', 'cifar10']
+    list_best_results_out, list_best_results_index_out = [], []
+    for out in out_list:
+        print('Out-of-distribution: ', out)
+        best_tnr, best_result, best_index = 0, 0, 0
+        for score in score_list:
+            total_X, total_Y = lib_regression.load_characteristics(score, args.in_dataset, out, outf)
+            X_val, Y_val, X_test, Y_test = lib_regression.block_split(total_X, total_Y, out)
+            X_train = np.concatenate((X_val[:500], X_val[1000:1500]))
+            Y_train = np.concatenate((Y_val[:500], Y_val[1000:1500]))
+            X_val_for_test = np.concatenate((X_val[500:1000], X_val[1500:]))
+            Y_val_for_test = np.concatenate((Y_val[500:1000], Y_val[1500:]))
+            lr = LogisticRegressionCV(n_jobs=-1).fit(X_train, Y_train)
+            y_pred = lr.predict_proba(X_train)[:, 1]
+            y_pred = lr.predict_proba(X_val_for_test)[:, 1]
+            results = lib_regression.detection_performance(lr, X_val_for_test, Y_val_for_test, outf)
+            if best_tnr < results['TNR']:
+                best_tnr = results['TNR']
+                best_index = score
+                best_result = lib_regression.detection_performance(lr, X_test, Y_test, outf)
+            
+        list_best_results_out.append(best_result)
+        list_best_results_index_out.append(best_index)
+    list_best_results.append(list_best_results_out)
+    list_best_results_index.append(list_best_results_index_out)
         
     # print the results
     count_in = 0
     mtypes = ['TNR', 'DTACC', 'AUROC', 'AUIN', 'AUOUT']
     for in_list in list_best_results:
-        print('in_distribution: ' + dataset_list[count_in] + '==========')
-        out_list = ['svhn', 'LSUN', 'TinyImagenet','cifar100']
-        if dataset_list[count_in] == 'svhn':
+        print('in_distribution: ' + args.in_dataset + '==========')
+        if args.in_dataset=='cifar10':
+            out_list = ['svhn', 'LSUN', 'LSUN_FIX','TinyImagenet','TinyImagenet_FIX','cifar100']
+        elif args.in_dataset == 'svhn':
             out_list = ['cifar10', 'LSUN', 'TinyImagenet','cifar100']
+        elif args.in_dataset == 'cifar100':
+            out_list = ['svhn', 'LSUN', 'LSUN_FIX','TinyImagenet','TinyImagenet_FIX','cifar10']
         count_out = 0
         for results in in_list:
             print('out_distribution: '+ out_list[int(count_out)]+'\n')
