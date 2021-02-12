@@ -27,7 +27,7 @@ from dataset.non_target_data import *
 from dataset.strategies import *
 
 # import sys
-# sys.stdout = open('ODIN_output.txt','a')
+# sys.stdout = open('./stdout/ODIN_output.txt','a')
 
 def main():
     # argument parsing
@@ -42,7 +42,7 @@ def main():
         args.num_classes=100
     _, in_dataloader_val, in_dataloader_test = globals()[args.in_dataset](args)    # train dataset is not needed
    
-        
+    args.outf = args.outf + args.arch + '_' + args.in_dataset+'/'
 
     # model setting/ loading
     if args.arch in ['MobileNet']:

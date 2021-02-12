@@ -123,7 +123,7 @@ def sample_estimator(model, num_classes, feature_list, train_loader):
 
     return sample_class_mean, precision
 
-def get_Mahalanobis_score(model, test_loader, num_classes, outf, out_flag, net_type, sample_mean, precision, layer_index, magnitude):
+def get_Mahalanobis_score(model, test_loader, num_classes, outf, out_flag, net, sample_mean, precision, layer_index, magnitude):
     '''
     Compute the proposed Mahalanobis confidence score on input dataset
     return: Mahalanobis score from layer_index
@@ -168,15 +168,15 @@ def get_Mahalanobis_score(model, test_loader, num_classes, outf, out_flag, net_t
          
         gradient =  torch.ge(data.grad.data, 0)
         gradient = (gradient.float() - 0.5) * 2
-        if net_type == 'densenet':
+        if net in ['DenseNet']:
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (63.0/255.0))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (62.1/255.0))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (66.7/255.0))
-        elif net_type == 'resnet':
+        elif net in ['ResNet18','ResNet34','ResNet50','ResNet101']:
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (0.2023))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (0.1994))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (0.2010))
-        elif net_type == 'mobilenet':
+        elif net in ['MobileNet']:
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (63.0/255.0))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (62.1/255.0))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (66.7/255.0))
@@ -204,7 +204,7 @@ def get_Mahalanobis_score(model, test_loader, num_classes, outf, out_flag, net_t
 
     return Mahalanobis
 
-def get_posterior(model, net_type, test_loader, magnitude, temperature, outf, out_flag):
+def get_posterior(model, net, test_loader, magnitude, temperature, outf, out_flag):
     '''
     Compute the maximum value of (processed) posterior distribution - ODIN
     return: null
@@ -234,19 +234,18 @@ def get_posterior(model, net_type, test_loader, magnitude, temperature, outf, ou
         labels = Variable(labels)
         loss = criterion(outputs, labels)
         loss.backward()
-        import pdb;pdb.set_trace()
         # Normalizing the gradient to binary in {0, 1}
         gradient =  torch.ge(data.grad.data, 0)
         gradient = (gradient.float() - 0.5) * 2
-        if net_type == 'densenet':
+        if net in ['DenseNet']:
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (63.0/255.0))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (62.1/255.0))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (66.7/255.0))
-        elif net_type == 'resnet':
+        elif net in ['ResNet18','ResNet34','ResNet50','ResNet101']:
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (0.2023))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (0.1994))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (0.2010))
-        elif net_type == 'mobilenet':
+        elif net in ['MobileNet']:
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (63.0/255.0))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (62.1/255.0))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (66.7/255.0))
@@ -266,7 +265,7 @@ def get_posterior(model, net_type, test_loader, magnitude, temperature, outf, ou
     f.close()
     g.close()
     
-def get_Mahalanobis_score_adv(model, test_data, test_label, num_classes, outf, net_type, sample_mean, precision, layer_index, magnitude):
+def get_Mahalanobis_score_adv(model, test_data, test_label, num_classes, outf, net, sample_mean, precision, layer_index, magnitude):
     '''
     Compute the proposed Mahalanobis confidence score on adversarial samples
     return: Mahalanobis score from layer_index
@@ -279,6 +278,7 @@ def get_Mahalanobis_score_adv(model, test_data, test_label, num_classes, outf, n
     for data_index in range(int(np.floor(test_data.size(0)/batch_size))):
         target = test_label[total : total + batch_size].cuda()
         data = test_data[total : total + batch_size].cuda()
+        import pdb;pdb.set_trace()
         total += batch_size
         data, target = Variable(data, requires_grad = True), Variable(target)
         
@@ -306,15 +306,15 @@ def get_Mahalanobis_score_adv(model, test_data, test_label, num_classes, outf, n
          
         gradient =  torch.ge(data.grad.data, 0)
         gradient = (gradient.float() - 0.5) * 2
-        if net_type == 'densenet':
+        if net in ['DenseNet']:
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (63.0/255.0))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (62.1/255.0))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (66.7/255.0))
-        elif net_type == 'resnet':
+        elif net in ['ResNet18','ResNet34','ResNet50','ResNet101']:
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (0.2023))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (0.1994))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (0.2010))
-        elif net_type == 'mobilenet':
+        elif net in ['MobileNet']:
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (63.0/255.0))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (62.1/255.0))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (66.7/255.0))

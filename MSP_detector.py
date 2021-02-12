@@ -19,8 +19,8 @@ from dataset.cifar import *
 from dataset.svhn import *
 from dataset.non_target_data import *
 
-import sys
-sys.stdout = open('MSP_output.txt','a')
+# import sys
+# sys.stdout = open('./stdout/MSP_output.txt','a')
 
 def main():
     # argument parsing
