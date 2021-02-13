@@ -25,8 +25,8 @@ from dataset.svhn import *
 from dataset.non_target_data import *
 from dataset.strategies import *
 
-import sys
-sys.stdout = open('./stdout/Mahalanobis_output.txt','a')
+# import sys
+# sys.stdout = open('./stdout/Mahalanobis_output.txt','a')
 
 def main():
     # argument parsing
@@ -133,7 +133,7 @@ def main():
                 Mahalanobis_in = np.asarray(Mahalanobis_in, dtype=np.float32)
                 Mahalanobis_out = np.asarray(Mahalanobis_out, dtype=np.float32)
                 Mahalanobis_data, Mahalanobis_labels = lib_generation.merge_and_generate_labels(Mahalanobis_out, Mahalanobis_in)
-                file_name = os.path.join(args.outf, 'Mahalanobis_%s_%s_%s.npy' % (str(magnitude), args.in_dataset , args.tuning_strategy))      #in/out/magnitude의 모든 조합을 계산. 만약 strategy로 다른 데이터셋을 쓴다면?
+                file_name = os.path.join(args.outf, 'Mahalanobis_%s_%s_%s.npy' % (str(magnitude), args.in_dataset , args.tuning_strategy))
                 Mahalanobis_data = np.concatenate((Mahalanobis_data, Mahalanobis_labels), axis=1)
                 np.save(file_name, Mahalanobis_data)
 
@@ -183,13 +183,14 @@ def main():
         best_tnr, best_result, best_index = 0, 0, 0
         for score in score_list:
             total_X, total_Y = lib_regression.load_characteristics(score, args.in_dataset, args.tuning_strategy, outf)
-            X_val, Y_val, X_test, Y_test = lib_regression.block_split(total_X, total_Y, args.tuning_strategy)
             if args.tuning_strategy in ['Aug_Rot','Aug_Perm','G-Odin']:
+                X_val, Y_val, X_test, Y_test = lib_regression.block_split(total_X, total_Y, args.tuning_strategy)
                 X_train = np.concatenate((X_val[:500], X_val[1000:1500]))
                 Y_train = np.concatenate((Y_val[:500], Y_val[1000:1500]))
                 X_val_for_test = np.concatenate((X_val[500:1000], X_val[1500:]))
                 Y_val_for_test = np.concatenate((Y_val[500:1000], Y_val[1500:]))
             elif args.tuning_strategy in ['Adversarial']:
+                X_val, Y_val, X_test, Y_test = lib_regression.block_split_adv(total_X, total_Y)
                 pivot = int(X_val.shape[0] / 6)
                 X_train = np.concatenate((X_val[:pivot], X_val[2*pivot:3*pivot], X_val[4*pivot:5*pivot]))
                 Y_train = np.concatenate((Y_val[:pivot], Y_val[2*pivot:3*pivot], Y_val[4*pivot:5*pivot]))
