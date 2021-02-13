@@ -40,7 +40,7 @@ def get_ODIN_detector_arguments():
     parser.add_argument('--tuning_strategy', default='Original', type=str, choices=['Original', 'Adversarial', 'G-Odin', 'Aug_Rot', 'Aug_Perm'])
     parser.add_argument('--T', type=float)
     parser.add_argument('--ep', type=float)
-    parser.add_argument('--outf', default='./output/', help='folder to output results')
+    parser.add_argument('--outf', default='./workspace/output/', help='folder to output results')
     parser.add_argument('--tuning',action='store_false')
     parser.add_argument('--path', default = None, type = str, help = 'path of model to be tested')
     args = parser.parse_args()
@@ -54,7 +54,7 @@ def get_Mahalanobis_detector_arguments():
     parser.add_argument('--batch_size', default=128, type=int, choices=[64,128,256])
     parser.add_argument('--tuning',action='store_true')
     parser.add_argument('--path', default = None, type = str, help = 'path of model to be tested')
-    parser.add_argument('--outf', default='./output/', help='folder to output results')
+    parser.add_argument('--outf', default='./workspace/output/', help='folder to output results')
     parser.add_argument('--tuning_strategy', default='Original', type=str, choices=['Original', 'Adversarial', 'G-Odin', 'Aug_Rot', 'Aug_Perm'])
     args = parser.parse_args()
     return args

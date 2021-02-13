@@ -25,8 +25,8 @@ from dataset.svhn import *
 from dataset.non_target_data import *
 from dataset.strategies import *
 
-import sys
-sys.stdout = open('./stdout/Mahalanobis_output.txt','a')
+# import sys
+# sys.stdout = open('./stdout/Mahalanobis_output.txt','a')
 
 def main():
     # argument parsing
@@ -176,7 +176,7 @@ def main():
 
         list_best_results, list_best_results_index = [], []
         print('In-distribution: ', args.in_dataset)
-        outf = './output/' + args.arch + '_' + args.in_dataset + '/'
+        outf = './workspace/output/' + args.arch + '_' + args.in_dataset + '/'
         list_best_results_out, list_best_results_index_out = [], []
 
         print('Out-of-distribution: ', args.tuning_strategy)
@@ -267,7 +267,7 @@ def main():
         score_list = list_best_results_index[0]
     list_best_results, list_best_results_index = [], []
     print('In-distribution: ', args.in_dataset)
-    outf = './output/' + args.arch + '_' + args.in_dataset + '/'
+    outf = './workspace/output/' + args.arch + '_' + args.in_dataset + '/'
     if args.in_dataset == 'cifar10':
         out_list = ['svhn', 'LSUN', 'LSUN_FIX', 'TinyImagenet', 'TinyImagenet_FIX', 'cifar100']
     elif args.in_dataset == 'svhn':

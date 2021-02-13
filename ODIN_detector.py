@@ -26,8 +26,8 @@ from dataset.svhn import *
 from dataset.non_target_data import *
 from dataset.strategies import *
 
-import sys
-sys.stdout = open('./stdout/ODIN_output.txt','a')
+# import sys
+# sys.stdout = open('./stdout/ODIN_output.txt','a')
 
 def main():
     # argument parsing
