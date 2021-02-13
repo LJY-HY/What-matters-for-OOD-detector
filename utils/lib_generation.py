@@ -278,7 +278,6 @@ def get_Mahalanobis_score_adv(model, test_data, test_label, num_classes, outf, n
     for data_index in range(int(np.floor(test_data.size(0)/batch_size))):
         target = test_label[total : total + batch_size].cuda()
         data = test_data[total : total + batch_size].cuda()
-        import pdb;pdb.set_trace()
         total += batch_size
         data, target = Variable(data, requires_grad = True), Variable(target)
         

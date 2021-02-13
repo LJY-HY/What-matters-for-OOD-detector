@@ -25,14 +25,16 @@ from dataset.svhn import *
 from dataset.non_target_data import *
 from dataset.strategies import *
 
-# import sys
-# sys.stdout = open('./stdout/Mahalanobis_output.txt','a')
+import sys
+sys.stdout = open('./stdout/Mahalanobis_output.txt','a')
 
 def main():
     # argument parsing
     args = argparse.ArgumentParser()
     args = get_Mahalanobis_detector_arguments()
     args.device = torch.device('cuda',args.gpu_id)
+    device = torch.device(f'cuda:{args.gpu_id}' if torch.cuda.is_available() else 'cpu')
+    torch.cuda.set_device(device)
 
     args.outf = args.outf + args.arch + '_' + args.in_dataset+'/'
     if os.path.isdir(args.outf) == False:
@@ -60,8 +62,6 @@ def main():
         pass
    
     # optimizer/scheduler setting
-    # 이건 SGD이던 Adam이던 상관없음. 어차피 net의 weight/bias는 바꾸지 않을꺼고 
-    # input-preprocessing도 sign값만 가지고 하기 때문에
     optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=4e-5)
 
     # model loading
@@ -76,8 +76,16 @@ def main():
     score_path = './workspace/softmax_scores/'
     os.makedirs(score_path,exist_ok=True)
 
+    # Adversarial samples clearing
+    adversarial_data_path = './output/'+args.arch+'_'+args.in_dataset+'/adv_data_'+args.arch+'_'+args.in_dataset+'_Adversarial.pth'
+    clean_data_path = './output/'+args.arch+'_'+args.in_dataset+'/clean_data_'+args.arch+'_'+args.in_dataset+'_Adversarial.pth'
+    if os.path.isfile(adversarial_data_path):
+        os.remove(adversarial_data_path)
+    if os.path.isfile(clean_data_path):
+        os.remove(clean_data_path)
+
     # set information about feature extaction
-    temp_x = torch.rand(2,3,32,32).cuda()
+    temp_x = torch.rand(2,3,32,32).to(args.device)
     temp_x = Variable(temp_x)
     temp_list = net.feature_list(temp_x)[1]
     num_output = len(temp_list)
@@ -197,8 +205,8 @@ def main():
                 best_result = lib_regression.detection_performance(lr, X_test, Y_test, outf)
                 best_lr = lr
                 
-            list_best_results_out.append(best_result)
-            list_best_results_index_out.append(best_index)
+        list_best_results_out.append(best_result)
+        list_best_results_index_out.append(best_index)
         list_best_results.append(list_best_results_out)
         list_best_results_index.append(list_best_results_index_out)
         # print the results

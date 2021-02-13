@@ -26,14 +26,16 @@ from dataset.svhn import *
 from dataset.non_target_data import *
 from dataset.strategies import *
 
-# import sys
-# sys.stdout = open('./stdout/ODIN_output.txt','a')
+import sys
+sys.stdout = open('./stdout/ODIN_output.txt','a')
 
 def main():
     # argument parsing
     args = argparse.ArgumentParser()
     args = get_ODIN_detector_arguments()
     args.device = torch.device('cuda',args.gpu_id)
+    device = torch.device(f'cuda:{args.gpu_id}' if torch.cuda.is_available() else 'cpu')
+    torch.cuda.set_device(device)
 
     # dataset setting
     if args.in_dataset in ['cifar10','svhn']:
@@ -64,8 +66,6 @@ def main():
         out_dist_list = ['svhn', 'LSUN', 'LSUN_FIX', 'TinyImagenet','TinyImagenet_FIX','cifar10']
 
     # optimizer/ scheduler setting
-    # 이건 SGD이던 Adam이던 상관없음. 어차피 net의 weight/bias는 바꾸지 않을꺼고 
-    # input-preprocessing도 sign값만 가지고 하기 때문에
     optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
 
     # model loading
@@ -76,9 +76,18 @@ def main():
     net.load_state_dict(checkpoint)
     net.eval()
     criterion = nn.CrossEntropyLoss()
+
     # Softmax Scores Path Setting
     score_path = './workspace/softmax_scores/'
     os.makedirs(score_path,exist_ok=True)
+
+    # Adversarial samples clearing
+    adversarial_data_path = './output/'+args.arch+'_'+args.in_dataset+'/adv_data_'+args.arch+'_'+args.in_dataset+'_Adversarial.pth'
+    clean_data_path = './output/'+args.arch+'_'+args.in_dataset+'/clean_data_'+args.arch+'_'+args.in_dataset+'_Adversarial.pth'
+    if os.path.isfile(adversarial_data_path):
+        os.remove(adversarial_data_path)
+    if os.path.isfile(clean_data_path):
+        os.remove(clean_data_path)
 
     tnr_best=0.
     T_temp=1
