@@ -41,51 +41,30 @@ def get_optim_scheduler(args,net):
 
     return optimizer, scheduler
 
-class Rotation(nn.Module):
+class Rotation(object):
     def __init__(self, max_range = 4):
-        super(Rotation, self).__init__()
-        self.max_range = max_range
+        pass
 
-    def forward(self, input, aug_index=None):
-        _device = input.device
+    def __call__(self,img):
+        image_dimension = img.size().__len__()
+        aug_index = np.random.randint(1,4)
+        img = torch.rot90(img,aug_index, (image_dimension-2,image_dimension-1))
+        return img
 
-        _, _, H, W = input.size()
-
-        if aug_index is None:
-            aug_index = np.random.randint(1,4)
-
-            output = torch.rot90(input, aug_index, (2, 3))
-
-        else:
-            aug_index = aug_index % self.max_range
-            output = torch.rot90(input, aug_index, (2, 3))
-
-        return output
-
-class CutPerm(nn.Module):
+class CutPerm(object):
     def __init__(self, max_range = 4):
         super(CutPerm, self).__init__()
         self.max_range = max_range
 
-    def forward(self, input, aug_index=None):
-        _device = input.device
-
-        _, _, H, W = input.size()
-
-        if aug_index is None:
-            aug_index = np.random.randint(1,4)
-
-            output = self._cutperm(input, aug_index)
-
-        else:
-            aug_index = aug_index % self.max_range
-            output = self._cutperm(input, aug_index)
-
-        return output
+    def __call__(self, img):
+        _, H, W = img.size()
+        aug_index = np.random.randint(1,4)
+        img = self._cutperm(img, aug_index)
+        return img
 
     def _cutperm(self, inputs, aug_index):
 
-        _, _, H, W = inputs.size()
+        _, H, W = inputs.size()
         h_mid = int(H / 2)
         w_mid = int(W / 2)
 
@@ -93,8 +72,8 @@ class CutPerm(nn.Module):
         jigsaw_v = aug_index % 2
 
         if jigsaw_h == 1:
-            inputs = torch.cat((inputs[:, :, h_mid:, :], inputs[:, :, 0:h_mid, :]), dim=2)
+            inputs = torch.cat((inputs[:, h_mid:, :], inputs[:, 0:h_mid, :]), dim=1)
         if jigsaw_v == 1:
-            inputs = torch.cat((inputs[:, :, :, w_mid:], inputs[:, :, :, 0:w_mid]), dim=3)
+            inputs = torch.cat((inputs[:, :, w_mid:], inputs[:, :, 0:w_mid]), dim=2)
 
         return inputs
