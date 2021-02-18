@@ -89,13 +89,12 @@ def main():
     if os.path.isfile(clean_data_path):
         os.remove(clean_data_path)
 
-    tnr_best=0.
-    T_temp=1
-    ep_temp=0
-
     if args.tuning_strategy is not 'Original':
         print('Tuning with strategy\n')
-        _, out_dataloader_val, _ = globals()[args.tuning_strategy](args)  # if strategy exists, replace out_dataloader_val.
+        _, out_dataloader_val, _ = globals()[args.tuning_strategy](args)
+        tnr_best=0.
+        T_temp=1
+        ep_temp=0
         T_candidate = [1,10,100,1000]
         e_candidate = [0,0.0005,0.001,0.0014,0.002,0.0024,0.005,0.01,0.05,0.1,0.2]
         # Tuning
@@ -214,9 +213,11 @@ def main():
         ep = ep_temp
 
     for out in out_dist_list:
-        # for out in out_dist_list:
-        _, out_dataloader_val, out_dataloader_test = globals()[out](args)               
-        if args.tuning_strategy == 'Original':                                          # 만약 strategy가 존재한다면 여기 부분은 skip
+        _, out_dataloader_val, out_dataloader_test = globals()[out](args)
+        if args.tuning_strategy == 'Original':
+            tnr_best=0.
+            T_temp=1
+            ep_temp=0
             print('Tuning with no strategy\n')
             T_candidate = [1,10,100,1000]
             e_candidate = [0,0.0005,0.001,0.0014,0.002,0.0024,0.005,0.01,0.05,0.1,0.2]
