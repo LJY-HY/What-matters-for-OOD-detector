@@ -229,7 +229,6 @@ def main():
                 print('')
                 count_out += 1
             count_in += 1
-    
     if args.tuning_strategy is not 'Original':
         m_list = [float(list_best_results_index[0][0][12:])]
 
