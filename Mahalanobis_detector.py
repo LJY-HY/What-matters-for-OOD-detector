@@ -311,7 +311,7 @@ def main():
         if args.in_dataset=='cifar10':
             out_list = ['svhn', 'LSUN', 'LSUN_FIX','TinyImagenet','TinyImagenet_FIX','cifar100']
         elif args.in_dataset == 'svhn':
-            out_list = ['cifar10', 'LSUN', 'TinyImagenet','cifar100']
+            out_list = ['cifar10', 'LSUN', 'LSUN_FIX','TinyImagenet','TinyImagenet_FIX','cifar100']
         elif args.in_dataset == 'cifar100':
             out_list = ['svhn', 'LSUN', 'LSUN_FIX','TinyImagenet','TinyImagenet_FIX','cifar10']
         count_out = 0
