@@ -70,10 +70,10 @@ svhn_perm_transform = transforms.Compose([
 def Aug_Rot(args):
     if args.in_dataset == 'cifar10':
         test_TF = cifar10_rot_transform
-        test_dataset = datasets.CIFAR10(root = '/home/esoc/repo/datasets/pytorch/cifar10', train=True, transform = test_TF, download=False)
+        test_dataset = datasets.CIFAR10(root = '/home/esoc/repo/datasets/pytorch/cifar10', train=False, transform = test_TF, download=False)
     elif args.in_dataset == 'cifar100':
         test_TF = cifar100_rot_transform
-        test_dataset = datasets.CIFAR100(root = '/home/esoc/repo/datasets/pytorch/cifar100', train=True, transform = test_TF, download=False)
+        test_dataset = datasets.CIFAR100(root = '/home/esoc/repo/datasets/pytorch/cifar100', train=False, transform = test_TF, download=False)
     elif args.in_dataset =='svhn':
         test_TF = svhn_rot_transform
         test_dataset = datasets.SVHN(root = '/home/esoc/repo/datasets/pytorch/svhn', split = 'test', transform = test_TF, download=True)
