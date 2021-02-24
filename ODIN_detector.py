@@ -21,6 +21,7 @@ from models.MobileNetV2 import *
 from models.ResNet import *
 from models.WideResNet import *
 from models.DenseNet import *
+from models.resnet_big import SupConResNet, LinearClassifier
 from dataset.cifar import *
 from dataset.svhn import *
 from dataset.non_target_data import *
@@ -58,6 +59,10 @@ def main():
     elif args.arch in ['EfficientNet']:
         pass
 
+    if args.e_path is not None:
+        net = SupConResNet(name='resnet18', num_classes=args.num_classes).to(args.device)
+        classifier = LinearClassifier(name='resnet18', num_classes=args.num_classes).to(args.device)
+
     if args.in_dataset == 'cifar10':
         out_dist_list = ['svhn', 'LSUN', 'LSUN_FIX', 'TinyImagenet','TinyImagenet_FIX','cifar100']
     if args.in_dataset == 'svhn':
@@ -71,10 +76,20 @@ def main():
     # model loading
     if args.path is not None:
         checkpoint = torch.load(args.path)
+    elif args.e_path is not None:
+        e_checkpoint = torch.load(args.e_path)['model']
+        c_checkpoint = torch.load(args.c_path)['model']
     else:
         checkpoint = torch.load('./checkpoint/'+args.in_dataset+'/'+args.arch)
-    net.load_state_dict(checkpoint)
-    net.eval()
+
+    if args.e_path is None:
+        net.load_state_dict(checkpoint)
+        net.eval()
+    else:
+        net.load_state_dict(e_checkpoint)
+        classifier.load_state_dict(c_checkpoint)
+        net.eval()
+        classifier.eval()
     criterion = nn.CrossEntropyLoss()
 
     # Softmax Scores Path Setting
@@ -110,7 +125,10 @@ def main():
                     images, _ = data
                     inputs = Variable(images.to(args.device),requires_grad=True)
                     del images
-                    outputs = net(inputs)
+                    if args.e_path is None:
+                        outputs = net(inputs)
+                    else:
+                        outputs = classifier(net.encoder(inputs))
                     if len(outputs)==2:
                         outputs = outputs[0]
                     nnOutputs = outputs.data.cpu()
@@ -138,7 +156,10 @@ def main():
                     tempInputs = torch.add(inputs.data, gradient, alpha=-ep)
 
                     # Now re-input noise-added input(tempInputs)
-                    outputs = net(Variable(tempInputs))
+                    if args.e_path is None:
+                        outputs = net(Variable(tempInputs))
+                    else:
+                        outputs = classifier(net.encoder(Variable(tempInputs)))
                     if len(outputs)==2:
                         outputs = outputs[0]
                     outputs = outputs / T
@@ -158,7 +179,10 @@ def main():
                     images, _ = data
                     inputs = Variable(images.to(args.device),requires_grad=True)
                     del images
-                    outputs = net(inputs)
+                    if args.e_path is None:
+                        outputs = net(inputs)
+                    else:
+                        outputs = classifier(net.encoder(inputs))
                     if len(outputs)==2:
                         outputs = outputs[0]
                     nnOutputs = outputs.data.cpu()
@@ -186,7 +210,10 @@ def main():
                     tempInputs = torch.add(inputs.data, gradient, alpha=-ep)
 
                     # Now re-input noise-added input(tempInputs)
-                    outputs = net(Variable(tempInputs))
+                    if args.e_path is None:
+                        outputs = net(Variable(tempInputs))
+                    else:
+                        outputs = classifier(net.encoder(Variable(tempInputs)))
                     if len(outputs)==2:
                         outputs = outputs[0]
                     outputs = outputs / T
@@ -234,7 +261,10 @@ def main():
                         images, _ = data
                         inputs = Variable(images.to(args.device),requires_grad=True)
                         del images
-                        outputs = net(inputs)
+                        if args.e_path is None:
+                            outputs = net(inputs)
+                        else:
+                            outputs = classifier(net.encoder(inputs))
                         if len(outputs)==2:
                             outputs = outputs[0]
                         nnOutputs = outputs.data.cpu()
@@ -262,7 +292,10 @@ def main():
                         tempInputs = torch.add(inputs.data, gradient, alpha=-ep)
 
                         # Now re-input noise-added input(tempInputs)
-                        outputs = net(Variable(tempInputs))
+                        if args.e_path is None:
+                            outputs = net(Variable(tempInputs))
+                        else:
+                            outputs = classifier(net.encoder(Variable(tempInputs)))
                         if len(outputs)==2:
                             outputs = outputs[0]
                         outputs = outputs / T
@@ -282,7 +315,10 @@ def main():
                         images, _ = data
                         inputs = Variable(images.to(args.device),requires_grad=True)
                         del images
-                        outputs = net(inputs)
+                        if args.e_path is None:
+                            outputs = net(inputs)
+                        else:
+                            outputs = classifier(net.encoder(inputs))
                         if len(outputs)==2:
                             outputs = outputs[0]
                         nnOutputs = outputs.data.cpu()
@@ -310,7 +346,10 @@ def main():
                         tempInputs = torch.add(inputs.data, gradient, alpha=-ep)
 
                         # Now re-input noise-added input(tempInputs)
-                        outputs = net(Variable(tempInputs))
+                        if args.e_path is None:
+                            outputs = net(Variable(tempInputs))
+                        else:
+                            outputs = classifier(net.encoder(Variable(tempInputs)))
                         if len(outputs)==2:
                             outputs = outputs[0]
                         outputs = outputs / T
@@ -346,7 +385,10 @@ def main():
             images, _ = data
             inputs = Variable(images.to(args.device),requires_grad=True)
             del images
-            outputs = net(inputs)
+            if args.e_path is None:
+                outputs = net(inputs)
+            else:
+                outputs = classifier(net.encoder(inputs))
             if len(outputs)==2:
                 outputs = outputs[0]
             nnOutputs = outputs.data.cpu()
@@ -374,7 +416,10 @@ def main():
             tempInputs = torch.add(inputs.data, gradient, alpha=-ep)
 
             # Now re-input noise-added input(tempInputs)
-            outputs = net(Variable(tempInputs))
+            if args.e_path is None:
+                outputs = net(Variable(tempInputs))
+            else:
+                outputs = classifier(net.encoder(Variable(tempInputs)))
             if len(outputs)==2:
                 outputs = outputs[0]
             outputs = outputs / T
@@ -393,7 +438,10 @@ def main():
             images, _ = data
             inputs = Variable(images.to(args.device),requires_grad=True)
             del images
-            outputs = net(inputs)
+            if args.e_path is None:
+                outputs = net(inputs)
+            else:
+                outputs = classifier(net.encoder(inputs))
             if len(outputs)==2:
                 outputs = outputs[0]
             nnOutputs = outputs.data.cpu()
@@ -421,7 +469,10 @@ def main():
             tempInputs = torch.add(inputs.data, gradient, alpha=-ep)
 
             # Now re-input noise-added input(tempInputs)
-            outputs = net(Variable(tempInputs))
+            if args.e_path is None:
+                outputs = net(Variable(tempInputs))
+            else:
+                outputs = classifier(net.encoder(Variable(tempInputs)))
             if len(outputs)==2:
                 outputs = outputs[0]
             outputs = outputs / T

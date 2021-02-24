@@ -42,6 +42,8 @@ def get_ODIN_detector_arguments():
     parser.add_argument('--ep', type=float)
     parser.add_argument('--outf', default='./workspace/output/', help='folder to output results')
     parser.add_argument('--tuning',action='store_false')
+    parser.add_argument('--e_path', default = None, type = str, help='path to supcon encoder')
+    parser.add_argument('--c_path', default = None, type = str, help='path to supcon classifier')
     parser.add_argument('--path', default = None, type = str, help = 'path of model to be tested')
     args = parser.parse_args()
     return args
@@ -53,6 +55,7 @@ def get_Mahalanobis_detector_arguments():
     parser.add_argument('--arch', default = 'ResNet18', type=str, choices = ['MobileNet','DenseNet','ResNet18','ResNet34','ResNet50','ResNet101','WideResNet28_2','WideResNet28_10','WideResNet40_2','WideResNet40_4','EfficientNet'])
     parser.add_argument('--batch_size', default=128, type=int, choices=[64,128,256])
     parser.add_argument('--tuning',action='store_true')
+    parser.add_argument('--from_supcon',action='store_true')
     parser.add_argument('--path', default = None, type = str, help = 'path of model to be tested')
     parser.add_argument('--outf', default='./workspace/output/', help='folder to output results')
     parser.add_argument('--tuning_strategy', default='Original', type=str, choices=['Original', 'Adversarial', 'G-Odin', 'Aug_Rot', 'Aug_Perm'])
