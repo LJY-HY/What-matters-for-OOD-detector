@@ -13,6 +13,7 @@ from utils import calMetric
 
 from models.MobileNetV2 import *
 from models.ResNet import *
+from models.resnet_big import SupConResNet
 from models.WideResNet import *
 from models.DenseNet import *
 from dataset.cifar import *
@@ -41,6 +42,9 @@ def main():
         net = globals()[args.arch](args).to(args.device)
     elif args.arch in ['ResNet18','ResNet34','ResNet50','ResNet101']:
         net = globals()[args.arch](args).to(args.device)
+    elif args.arch in ['SupConResNet']:
+        net = globals()[args.arch]().to(args.device)
+        import pdb;pdb.set_trace()
     elif args.arch in ['WideResNet28_2','WideResNet28_10','WideResNet40_2','WideResNet40_4']:
         net = globals()[args.arch](args).to(args.device)
     elif args.arch in ['DenseNet']:

@@ -25,12 +25,14 @@ def get_architecture(args):
 def get_optim_scheduler(args,net):
     if args.optimizer == 'SGD':
         optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=args.wd)
-    if args.optimizer == 'Nesterov':
+    elif args.optimizer == 'Nesterov':
         optimizer = optim.SGD(net.parameters(), lr = args.lr, momentum=0.9, nesterov= True, weight_decay=args.wd)
-    if args.optimizer == 'Adam':
+    elif args.optimizer == 'Adam':
         optimizer = optim.Adam(net.parameters(), lr = args.lr)
-    if args.optimizer == 'AdamW':
+    elif args.optimizer == 'AdamW':
         optimizer = optim.AdamW(net.parameters(), lr = args.lr)
+    elif args.optimizer == 'LARS':
+        pass
 
     if args.scheduler == 'MultiStepLR':
         scheduler = optim.lr_scheduler.MultiStepLR(optimizer, [int(args.epoch*0.5),int(args.epoch*0.75)],gamma=0.1)

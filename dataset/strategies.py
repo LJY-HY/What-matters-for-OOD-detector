@@ -172,7 +172,7 @@ def Adversarial(args):
             equal_flag = pred.eq(target.data).cpu()
             correct += equal_flag.sum()
 
-            noisy_data = torch.add(data.data, random_nosie_size, torch.randn(data.size()).cuda()) 
+            noisy_data = torch.add(data.data, torch.randn(data.size()).cuda(), alpha=random_nosie_size) 
             noisy_data = torch.clamp(noisy_data, min_pixel, max_pixel)
 
             if total == 0:
@@ -208,7 +208,7 @@ def Adversarial(args):
                 gradient.index_copy_(1, torch.LongTensor([2]).cuda(), \
                                     gradient.index_select(1, torch.LongTensor([2]).cuda()) / (0.2010))
 
-            adv_data = torch.add(inputs.data, adv_noise, gradient)
+            adv_data = torch.add(inputs.data, gradient, alpha=adv_noise)
             adv_data = torch.clamp(adv_data, min_pixel, max_pixel)
             
             # measure the noise 

@@ -75,9 +75,10 @@ def sample_estimator(model, num_classes, feature_list, train_loader):
             out_features[i] = torch.mean(out_features[i].data, 2)
             
         # compute the accuracy
-        pred = output.data.max(1)[1]
-        equal_flag = pred.eq(target.cuda()).cpu()
-        correct += equal_flag.sum()
+        if output is not None:
+            pred = output.data.max(1)[1]
+            equal_flag = pred.eq(target.cuda()).cpu()
+            correct += equal_flag.sum()
         
         # construct the sample matrix
         for i in range(data.size(0)):
@@ -118,8 +119,9 @@ def sample_estimator(model, num_classes, feature_list, train_loader):
         temp_precision = group_lasso.precision_
         temp_precision = torch.from_numpy(temp_precision).float().cuda()
         precision.append(temp_precision)
-        
-    print('\n Training Accuracy:({:.2f}%)\n'.format(100. * correct / total))
+    
+    if output is not None:
+        print('\n Training Accuracy:({:.2f}%)\n'.format(100. * correct / total))
 
     return sample_class_mean, precision
 
@@ -180,7 +182,7 @@ def get_Mahalanobis_score(model, test_loader, num_classes, outf, out_flag, net, 
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (63.0/255.0))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (62.1/255.0))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (66.7/255.0))
-        tempInputs = torch.add(data.data, -magnitude, gradient)
+        tempInputs = torch.add(data.data, gradient, alpha=-magnitude)
  
         noise_out_features = model.intermediate_forward(Variable(tempInputs, volatile=True), layer_index)
         noise_out_features = noise_out_features.view(noise_out_features.size(0), noise_out_features.size(1), -1)
@@ -250,7 +252,7 @@ def get_posterior(model, net, test_loader, magnitude, temperature, outf, out_fla
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (62.1/255.0))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (66.7/255.0))
 
-        tempInputs = torch.add(data.data,  -magnitude, gradient)
+        tempInputs = torch.add(data.data, gradient, alpha=-magnitude)
         outputs = model(Variable(tempInputs, volatile=True))
         outputs = outputs / temperature
         soft_out = F.softmax(outputs, dim=1)
@@ -317,7 +319,7 @@ def get_Mahalanobis_score_adv(model, test_data, test_label, num_classes, outf, n
             gradient.index_copy_(1, torch.LongTensor([0]).cuda(), gradient.index_select(1, torch.LongTensor([0]).cuda()) / (63.0/255.0))
             gradient.index_copy_(1, torch.LongTensor([1]).cuda(), gradient.index_select(1, torch.LongTensor([1]).cuda()) / (62.1/255.0))
             gradient.index_copy_(1, torch.LongTensor([2]).cuda(), gradient.index_select(1, torch.LongTensor([2]).cuda()) / (66.7/255.0))
-        tempInputs = torch.add(data.data, -magnitude, gradient)
+        tempInputs = torch.add(data.data, gradient, alpha=-magnitude)
  
         noise_out_features = model.intermediate_forward(Variable(tempInputs, volatile=True), layer_index)
         noise_out_features = noise_out_features.view(noise_out_features.size(0), noise_out_features.size(1), -1)
