@@ -7,6 +7,8 @@ from models.DenseNet import *
 from dataset.cifar import *
 import torch.optim as optim
 
+np.random.seed(0)
+
 def get_architecture(args):
     if args.arch in ['MobileNet']:
         net = globals()[args.arch](args).to(args.device)

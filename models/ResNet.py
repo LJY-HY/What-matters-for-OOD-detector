@@ -65,6 +65,13 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
         self.linear = nn.Linear(512*block.expansion, num_classes)
 
+        '''
+        Does self.collecting include to the dict of the MODEL.pth?
+        gram detection을 할때, 이렇게 선언을 ResNet을 해놓으면 기존에 있던 ResNet18.pth들이 loading이 되나?
+        아니면 만약 self.collecting이 없는 pth파일이면 그냥 기본으로 False가 저장이 되어 load가 되나?
+        '''
+        # self.collecting = False
+
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
         layers = []
@@ -83,6 +90,71 @@ class ResNet(nn.Module):
         out = out.view(out.size(0), -1)
         out = self.linear(out)
         return out
+
+    def record(self,t):
+        if self.collecting:
+            self.gram_feats.append(t)
+
+    def gram_feature_list(self,x):
+        self.collecting = True
+        self.gram_feats = []
+        self.forward(x)
+        self.collecting = False
+        temp = self.gram_feats
+        self.gram_feats = []
+        return temp
+
+    def load(self, path="resnet_cifar10.pth"):
+        tm = torch.load(path,map_location="cpu")        
+        self.load_state_dict(tm)
+    
+    def get_min_max(self, data, power):
+        mins = []
+        maxs = []
+        
+        for i in range(0,len(data),128):
+            batch = data[i:i+128].cuda()
+            feat_list = self.gram_feature_list(batch)
+            for L,feat_L in enumerate(feat_list):
+                if L==len(mins):
+                    mins.append([None]*len(power))
+                    maxs.append([None]*len(power))
+                
+                for p,P in enumerate(power):
+                    g_p = G_p(feat_L,P)
+                    
+                    current_min = g_p.min(dim=0,keepdim=True)[0]
+                    current_max = g_p.max(dim=0,keepdim=True)[0]
+                    
+                    if mins[L][p] is None:
+                        mins[L][p] = current_min
+                        maxs[L][p] = current_max
+                    else:
+                        mins[L][p] = torch.min(current_min,mins[L][p])
+                        maxs[L][p] = torch.max(current_max,maxs[L][p])
+        
+        return mins,maxs
+    
+    def get_deviations(self,data,power,mins,maxs):
+        deviations = []
+        
+        for i in range(0,len(data),128):            
+            batch = data[i:i+128].cuda()
+            feat_list = self.gram_feature_list(batch)
+            batch_deviations = []
+            for L,feat_L in enumerate(feat_list):
+                dev = 0
+                for p,P in enumerate(power):
+                    g_p = G_p(feat_L,P)
+                    
+                    dev +=  (F.relu(mins[L][p]-g_p)/torch.abs(mins[L][p]+10**-6)).sum(dim=1,keepdim=True)
+                    dev +=  (F.relu(g_p-maxs[L][p])/torch.abs(maxs[L][p]+10**-6)).sum(dim=1,keepdim=True)
+                batch_deviations.append(dev.cpu().detach().numpy())
+            batch_deviations = np.concatenate(batch_deviations,axis=1)
+            deviations.append(batch_deviations)
+        deviations = np.concatenate(deviations,axis=0)
+        
+        return deviations
     
     # function to extact the multiple features
     def feature_list(self, x):

@@ -27,7 +27,7 @@ def main():
     args = argparse.ArgumentParser()
     args = get_MSP_detector_arguments()
     args.device = torch.device('cuda',args.gpu_id)
-
+    
     # dataset setting
     if args.in_dataset in ['cifar10','svhn']:
         args.num_classes=10

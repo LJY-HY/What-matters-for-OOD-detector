@@ -33,7 +33,7 @@ def main():
     args = argparse.ArgumentParser()
     args = get_Mahalanobis_detector_arguments()
     args.device = torch.device('cuda',args.gpu_id)
-    device = torch.device(f'cuda:{args.gpu_id}' if torch.cuda.is_available() else 'cpu')
+    device = torch.device(f'cuda:{args.gpu_id}')
     torch.cuda.set_device(device)
 
     args.outf = args.outf + args.arch + '_' + args.in_dataset+'/'
@@ -60,7 +60,7 @@ def main():
         net = globals()[args.arch](args).to(args.device)
     elif args.arch in ['EfficientNet']:
         pass
-   
+    
     # optimizer/scheduler setting
     optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=4e-5)
 
@@ -296,7 +296,7 @@ def main():
                 best_tnr = results['TNR']
                 best_index = score
                 best_result = lib_regression.detection_performance(lr, X_test, Y_test, outf)
-            
+                
         list_best_results_out.append(best_result)
         list_best_results_index_out.append(best_index)
     list_best_results.append(list_best_results_out)
