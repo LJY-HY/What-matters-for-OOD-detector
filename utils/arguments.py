@@ -57,6 +57,8 @@ def get_Mahalanobis_detector_arguments():
     parser.add_argument('--tuning',action='store_true')
     parser.add_argument('--from_supcon',action='store_true')
     parser.add_argument('--path', default = None, type = str, help = 'path of model to be tested')
+    parser.add_argument('--e_path', default = None, type = str, help='path to supcon encoder')
+    parser.add_argument('--c_path', default = None, type = str, help='path to supcon classifier')
     parser.add_argument('--outf', default='./workspace/output/', help='folder to output results')
     parser.add_argument('--tuning_strategy', default='Original', type=str, choices=['Original', 'Adversarial', 'G-Odin', 'Aug_Rot', 'Aug_Perm'])
     args = parser.parse_args()

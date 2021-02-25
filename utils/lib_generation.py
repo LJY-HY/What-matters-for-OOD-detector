@@ -75,9 +75,10 @@ def sample_estimator(model, num_classes, feature_list, train_loader):
             out_features[i] = torch.mean(out_features[i].data, 2)
             
         # compute the accuracy
-        pred = output.data.max(1)[1]
-        equal_flag = pred.eq(target.cuda()).cpu()
-        correct += equal_flag.sum()
+        if output is not None:
+            pred = output.data.max(1)[1]
+            equal_flag = pred.eq(target.cuda()).cpu()
+            correct += equal_flag.sum()
         
         # construct the sample matrix
         for i in range(data.size(0)):
@@ -118,8 +119,9 @@ def sample_estimator(model, num_classes, feature_list, train_loader):
         temp_precision = group_lasso.precision_
         temp_precision = torch.from_numpy(temp_precision).float().cuda()
         precision.append(temp_precision)
-        
-    print('\n Training Accuracy:({:.2f}%)\n'.format(100. * correct / total))
+    
+    if output is not None:
+        print('\n Training Accuracy:({:.2f}%)\n'.format(100. * correct / total))
 
     return sample_class_mean, precision
 

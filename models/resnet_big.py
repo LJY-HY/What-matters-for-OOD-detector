@@ -139,7 +139,7 @@ class ResNet(nn.Module):
         out = self.avgpool(out)
         out = torch.flatten(out, 1)
         # y = self.linear(out)
-        return _, out_list
+        return None, out_list
     
     # function to extact a specific feature
     def intermediate_forward(self, x, layer_index):
@@ -170,7 +170,7 @@ class ResNet(nn.Module):
         out = self.avgpool(penultimate)
         out = torch.flatten(out, 1)
         # y = self.linear(out)
-        return _, penultimate
+        return None, penultimate
 
 
 def resnet18(**kwargs):
@@ -234,6 +234,20 @@ class SupConResNet(nn.Module):
         feat = F.normalize(self.head(feat), dim=1)
         return feat
 
+    def feature_list(self, x):
+        _, out_list = self.encoder.feature_list(x)
+
+        return None, out_list
+
+    def intermediate_forward(self, x, layer_index):
+        out = self.encoder.intermediate_forward(x, layer_index)
+
+        return out
+
+    def penultimate_forward(self, x):
+        _, penultimate = self.encoder.penultimate_forward(x)
+
+        return None, penultimate
 
 class SupCEResNet(nn.Module):
     """encoder + classifier"""
