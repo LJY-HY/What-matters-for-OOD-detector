@@ -1,6 +1,42 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
+from utils.gram_detector import *
+
+class BasicBlock_Gram(nn.Module):
+    expansion = 1
+
+    def __init__(self, in_planes, planes, stride=1):
+        super(BasicBlock_Gram, self).__init__()
+        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_planes != self.expansion*planes:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(self.expansion*planes)
+            )
+
+    def forward(self, x, model):
+        '''
+        model is one class
+        '''
+        out = self.conv1(x)
+        model.record(out)
+        out = F.relu(self.bn1(out))
+        model.record(out)
+        out = self.conv2(out)
+        model.record(out)
+        out = self.bn2(out)
+        model.record(out)
+        out += self.shortcut(x)
+        model.record(self.shortcut(x))
+        out = F.relu(out)
+        model.record(out)
+        return out
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -19,8 +55,10 @@ class BasicBlock(nn.Module):
             )
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
+        out = self.conv1(x)
+        out = F.relu(self.bn1(out))
+        out = self.conv2(out)
+        out = self.bn2(out)
         out += self.shortcut(x)
         out = F.relu(out)
         return out
@@ -65,12 +103,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
         self.linear = nn.Linear(512*block.expansion, num_classes)
 
-        '''
-        Does self.collecting include to the dict of the MODEL.pth?
-        gram detection을 할때, 이렇게 선언을 ResNet을 해놓으면 기존에 있던 ResNet18.pth들이 loading이 되나?
-        아니면 만약 self.collecting이 없는 pth파일이면 그냥 기본으로 False가 저장이 되어 load가 되나?
-        '''
-        # self.collecting = False
+        self.collecting = False
 
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
@@ -91,7 +124,7 @@ class ResNet(nn.Module):
         out = self.linear(out)
         return out
 
-    def record(self,t):
+    def record(self, t):
         if self.collecting:
             self.gram_feats.append(t)
 
@@ -103,11 +136,7 @@ class ResNet(nn.Module):
         temp = self.gram_feats
         self.gram_feats = []
         return temp
-
-    def load(self, path="resnet_cifar10.pth"):
-        tm = torch.load(path,map_location="cpu")        
-        self.load_state_dict(tm)
-    
+  
     def get_min_max(self, data, power):
         mins = []
         maxs = []
@@ -137,8 +166,7 @@ class ResNet(nn.Module):
     
     def get_deviations(self,data,power,mins,maxs):
         deviations = []
-        
-        for i in range(0,len(data),128):            
+        for i in range(0,len(data),128):     
             batch = data[i:i+128].cuda()
             feat_list = self.gram_feature_list(batch)
             batch_deviations = []
@@ -206,10 +234,16 @@ class ResNet(nn.Module):
         return y, penultimate
 
 def ResNet18(args):
-    return ResNet(BasicBlock, [2,2,2,2], args.num_classes)
+    if args.detect_mode == 'Gram':
+        return ResNet(BasicBlock_Gram, [2,2,2,2], args.num_classes)
+    else:
+        return ResNet(BasicBlock, [2,2,2,2], args.num_classes)
 
 def ResNet34(args):
-    return ResNet(BasicBlock, [3,4,6,3], args.num_classes)
+    if args.detect_mode == 'Gram':
+        return ResNet(BasicBlock_Gram, [3,4,6,3], args.num_classes)
+    else:
+        return ResNet(BasicBlock, [3,4,6,3], args.num_classes)
 
 def ResNet50(args):
     return ResNet(Bottleneck, [3,4,6,3], args.num_classes)

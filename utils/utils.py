@@ -4,10 +4,16 @@ from models.MobileNetV2 import *
 from models.ResNet import *
 from models.WideResNet import *
 from models.DenseNet import *
-from dataset.cifar import *
 import torch.optim as optim
-
+from torchvision import transforms
 np.random.seed(0)
+
+cifar10_mean = (0.4914, 0.4823, 0.4466)
+cifar10_std = (0.2471, 0.2435, 0.2616)
+cifar100_mean = (0.5071, 0.4867, 0.4408)
+cifar100_std = (0.2675, 0.2565, 0.2761)
+svhn_mean = (129.3/255, 124.1/255, 112.4/255)
+svhn_std = (68.2/255, 65.4/255.0, 70.4/255.0)
 
 def get_architecture(args):
     if args.arch in ['MobileNet']:
@@ -42,6 +48,29 @@ def get_optim_scheduler(args,net):
     #     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer,T_max=args.epoch)
 
     return optimizer, scheduler
+
+def get_transform(dataset='cifar10', mode='train'):
+    if dataset == 'cifar10':
+        normalize = transforms.Normalize(mean = cifar10_mean, std = cifar10_std)
+    elif dataset == 'cifar100':
+        normalize = transforms.Normalize(mean = cifar100_mean, std = cifar100_std)
+    elif dataset == 'svhn':
+        normalize = transforms.Normalize(mean = svhn_mean, std = svhn_std)
+
+    if mode == 'train':
+        TF = transforms.Compose([
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomCrop(size=32, padding = int(32*0.125)),
+            transforms.ToTensor(),
+            normalize,
+        ])
+    elif mode == 'test':
+        TF = transforms.Compose([
+        transforms.ToTensor(),
+        normalize,
+        ])
+    
+    return TF
 
 class Rotation(object):
     def __init__(self, max_range = 4):

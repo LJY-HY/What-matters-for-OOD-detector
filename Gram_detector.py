@@ -1,8 +1,6 @@
-import sys
 import random
-import matplotlib.pyplot as plt
 import math
-
+import faulthandler
 import numpy as np
 
 import torch
@@ -15,11 +13,11 @@ from torchvision import datasets, transforms
 from torch.nn.parameter import Parameter
 
 import os
-from tqdm import tqdm
 import argparse
 
 from utils.arguments import get_Gram_detector_arguments
 from utils.utils import *
+from utils.gram_detector import *
 
 from models.MobileNetV2 import *
 from models.ResNet import *
@@ -34,16 +32,17 @@ from dataset.strategies import *
 # sys.stdout = open('./stdout/Gram_output.txt','a')
 
 def main():
+    faulthandler.enable()
+    
     # argument parsing
     args = argparse.ArgumentParser()
     args = get_Gram_detector_arguments()
     args.device = torch.device('cuda',args.gpu_id)
-    device = torch.device(f'cuda:{args.gpu_id}' if torch.cuda.is_available() else 'cpu')
+    device = torch.device(f'cuda:{args.gpu_id}')
     torch.cuda.set_device(device)
 
     args.outf = args.outf + args.arch + '_' + args.in_dataset+'/'
-    if os.path.isdir(args.outf) == False:
-        os.mkdir(args.outf)
+    os.makedirs(args.outf,exist_ok=True)
 
     # dataset setting
     if args.in_dataset in ['cifar10','svhn']:
@@ -51,12 +50,14 @@ def main():
     elif args.in_dataset in ['cifar100']:
         args.num_classes=100
     print('load in-distribution data: ', args.in_dataset)
-    in_dataloader_train, in_dataloader_test = globals()[args.in_dataset](args)    #train_dataloader is not needed
-    data_train = list(torch.utils.data.DataLoader(datasets.CIFAR10('data',train=True, download = True, transform = transform_test),batch_size = args.batch_size, shuffle = False))
-    data = list(torch.utils.data.DataLoader(datasets.CIFAR10('data',train=False, download = True, transform = transform_test),batch_size = args.batch_size, shuffle = False))
 
+    # in-distribution setting
+    in_dataloader_train, in_dataloader_test = globals()[args.in_dataset](args)    
+    data_train, data = globals()[args.in_dataset](args, train_TF = get_transform(args.in_dataset,'test'), test_TF = get_transform(args.in_dataset,'test'))
+        
     # model setting
     print('load model: '+args.arch)
+    args.detect_mode = 'Gram'
     if args.arch in ['MobileNet']:
         net = globals()[args.arch](args).to(args.device)
     elif args.arch in ['ResNet18','ResNet34','ResNet50','ResNet101']:
@@ -87,14 +88,49 @@ def main():
     if args.in_dataset == 'cifar100':
         out_dist_list = ['svhn', 'LSUN', 'LSUN_FIX', 'TinyImagenet','TinyImagenet_FIX','cifar10']
 
-    correct = 0
-    total = 0
-    for x,y in test_dataloader:
-        x = x.cuda()
-        y = y.numpy()
-        correct +=(y==np.argmax(net(x).detach().cpu().numpy(),axis=1)).sum()
-        total += y.shape[0]
-    print("Accuracy :",correct/total)
 
+    # Extract predictions for train and test data
+    train_preds = []
+    train_confs = []
+    train_logits = []
+    for idx, (inputs, targets) in enumerate(data_train):
+        inputs, targets = inputs.to(args.device), targets.to(args.device)
+        logits = net(inputs)
+        confs = F.softmax(logits,dim=1).cpu().detach().numpy()
+        preds = np.argmax(confs,axis=1)
+        logits = logits.cpu().detach().numpy()
+
+        train_confs.extend(np.max(confs,axis=1))
+        train_preds.extend(preds)
+        train_logits.extend(logits)
+
+    test_preds = []
+    test_confs = []
+    test_logits = []
+    for idx, (inputs, targets) in enumerate(data):
+        inputs, targets = inputs.to(args.device), targets.to(args.device)
+        logits = net(inputs)
+        confs = F.softmax(logits,dim=1).cpu().detach().numpy()
+        preds = np.argmax(confs,axis=1)
+        logits = logits.cpu().detach().numpy()
+
+        test_confs.extend(np.max(confs,axis=1))
+        test_preds.extend(preds)
+        test_logits.extend(logits)
+
+    # Detecting OODs by identifying anomalies in correlations
+    detector = Detector(args)    
+    test_TF = get_transform(args.in_dataset, 'test')
+    data_train = list(torch.utils.data.DataLoader(datasets.CIFAR10('data', train=True, download=True, transform=test_TF), batch_size=1, shuffle=False))
+    data = list(torch.utils.data.DataLoader(datasets.CIFAR10('data', train=False, download=True, transform=test_TF), batch_size=1, shuffle=False))
+    detector.compute_minmaxs(net, data_train, train_preds, POWERS=range(1,11))
+    detector.compute_test_deviations(net, data,test_preds, test_confs, POWERS=range(1,11))
     for out in out_dist_list:
+        print("Out-of-distribution :",out)
+        args.batch_size=1
         _,out_dataloder_test = globals()[out](args)
+        ood = list(out_dataloder_test)
+        results = detector.compute_ood_deviations(net, ood, POWERS=range(1,11))
+
+if __name__ == '__main__':
+    main()

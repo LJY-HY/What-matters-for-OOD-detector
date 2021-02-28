@@ -38,8 +38,7 @@ def main():
     torch.cuda.set_device(device)
 
     args.outf = args.outf + args.arch + '_' + args.in_dataset+'/'
-    if os.path.isdir(args.outf) == False:
-        os.mkdir(args.outf)
+    os.makedirs(args.outf,exist_ok=True)
 
     # dataset setting
     if args.in_dataset in ['cifar10','svhn']:

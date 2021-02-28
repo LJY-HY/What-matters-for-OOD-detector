@@ -5,60 +5,12 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision import transforms
 from torch.utils.data import random_split, Subset
+from utils.utils import *
 
-cifar10_mean = (0.4914, 0.4823, 0.4466)
-cifar10_std = (0.2471, 0.2435, 0.2616)
-cifar100_mean = (0.5071, 0.4867, 0.4408)
-cifar100_std = (0.2675, 0.2565, 0.2761)
-svhn_mean = (129.3/255, 124.1/255, 112.4/255)
-svhn_std = (68.2/255, 65.4/255.0, 70.4/255.0)
-
-cifar10_train_transform = transforms.Compose([
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop(size=32, padding=int(32*0.125)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=cifar10_mean, std = cifar10_std)
-    ])
-
-cifar10_test_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=cifar10_mean, std = cifar10_std)
-    ])
-
-cifar100_train_transform = transforms.Compose([
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop(size=32, padding=int(32*0.125)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=cifar100_mean, std = cifar100_std)
-    ])
-
-cifar100_test_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=cifar100_mean, std = cifar100_std)
-    ])
-
-svhn_train_transform = transforms.Compose([
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop(size=32, padding=int(32*0.125)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=svhn_mean, std = svhn_std)
-    ])
-
-svhn_test_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=svhn_mean, std = svhn_std)
-    ])
-
-def cifar10(args):
-    if args.in_dataset == 'cifar10':
-        train_TF = cifar10_train_transform
-        test_TF = cifar10_test_transform
-    elif args.in_dataset == 'cifar100':
-        train_TF = cifar100_train_transform
-        test_TF = cifar100_test_transform
-    elif args.in_dataset =='svhn':
-        train_TF = svhn_train_transform
-        test_TF = svhn_test_transform
+def cifar10(args, train_TF = None, test_TF = None):
+    if train_TF is None and test_TF is None:
+        train_TF = get_transform(args.in_dataset, 'train')
+        test_TF = get_transform(args.in_dataset, 'test')
   
     train_dataset = datasets.CIFAR10(root = '/home/esoc/repo/datasets/pytorch/cifar10', train=True, transform = train_TF, download=True)
     test_dataset = datasets.CIFAR10(root = '/home/esoc/repo/datasets/pytorch/cifar10', train=False, transform = test_TF, download=False)
@@ -74,16 +26,10 @@ def cifar10(args):
         return train_dataloader, val_dataloader, test_dataloader
     return train_dataloader, test_dataloader
 
-def cifar100(args):
-    if args.in_dataset == 'cifar10':
-        train_TF = cifar10_train_transform
-        test_TF = cifar10_test_transform
-    elif args.in_dataset == 'cifar100':
-        train_TF = cifar100_train_transform
-        test_TF = cifar100_test_transform
-    elif args.in_dataset =='svhn':
-        train_TF = svhn_train_transform
-        test_TF = svhn_test_transform
+def cifar100(args, train_TF = None, test_TF = None):
+    if train_TF is None and test_TF is None:
+        train_TF = get_transform(args.in_dataset, 'train')
+        test_TF = get_transform(args.in_dataset, 'test')
 
     train_dataset = datasets.CIFAR100(root = '/home/esoc/repo/datasets/pytorch/cifar100', train=True, transform = train_TF, download=True)
     test_dataset = datasets.CIFAR100(root = '/home/esoc/repo/datasets/pytorch/cifar100', train=False, transform = test_TF, download=False)
