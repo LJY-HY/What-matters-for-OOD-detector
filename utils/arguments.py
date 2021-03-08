@@ -14,6 +14,7 @@ def get_arguments():
     parser.add_argument('--wd', '--weight_decay','--wdecay', default=5e-4, type=float, choices=[5e-4,1e-2,1e-3,1e-4,1e-6])
     parser.add_argument('--warmup',action='store_true')
     parser.add_argument('--BN','--batch_normalization',action='store_false')
+    parser.add_argument('--refinement', type=str, choices=['label_smoothing','mixup'])
     parser.add_argument('--tuning',action='store_true')
     parser.add_argument('--trial', default = '0', type=str)
     args = parser.parse_args()

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 import torchvision
 import torchvision.transforms as transforms
 import os
@@ -30,7 +31,13 @@ def main():
     optimizer, scheduler = get_optim_scheduler(args,net)
        
     CE_loss = nn.CrossEntropyLoss()
-    path = './checkpoint/'+args.in_dataset+'/'+args.arch+'_'+str(args.epoch)+'_'+str(args.batch_size)+'_'+args.optimizer+'_'+args.scheduler+'_'+str(args.lr)[2:]+'_trial_'+args.trial
+    training = ''
+    if args.refinement is 'label_smoothing':
+        training = 'ls_'
+        CE_loss = LabelSmoothingLoss(classes=args.num_classes, smoothing=0.05)
+    elif args.refinement is 'mixup':
+        training = 'mixup_'
+    path = './checkpoint/'+args.in_dataset+'/'+training+args.arch+'_'+str(args.epoch)+'_'+str(args.batch_size)+'_'+args.optimizer+'_'+args.scheduler+'_'+str(args.lr)[2:]+'_trial_'+args.trial
     best_acc=0
     for epoch in range(args.epoch):
         train(args, net, train_dataloader, optimizer, scheduler, CE_loss, epoch)
@@ -49,9 +56,15 @@ def train(args, net, train_dataloader, optimizer, scheduler, CE_loss, epoch):
     loss_average = 0
     for batch_idx, (inputs, targets) in enumerate(train_dataloader):
         inputs, targets = inputs.to(args.device), targets.to(args.device)     
+        if args.refinement is 'mixup':
+            inputs, targets_a, targets_b, lam = mixup_data(args, inputs, targets)
+            inputs, targets_a, targets_b = map(Variable, (inputs, targets_a, targets_b))
+            outputs = net(inputs)
+            loss = mixup_criterion(CE_loss, outputs, targets_a, targets_b, lam)
+        else:
+            outputs = net(inputs)
+            loss = CE_loss(outputs,targets)
         optimizer.zero_grad()
-        outputs = net(inputs)
-        loss = CE_loss(outputs,targets)
         loss.backward()
         optimizer.step()
         train_loss += loss.item()
