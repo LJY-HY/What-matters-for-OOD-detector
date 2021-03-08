@@ -2,6 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+from utils.gram_detector import *
+
+
+global gram_feats
+gram_feats = []
+global collecting 
+collecting = False
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -21,11 +28,23 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         out = self.conv1(x)
+        if collecting:
+            gram_feats.append(out)
         out = F.relu(self.bn1(out))
+        if collecting:
+            gram_feats.append(out)
         out = self.conv2(out)
+        if collecting:
+            gram_feats.append(out)
         out = self.bn2(out)
+        if collecting:
+            gram_feats.append(out)
         out += self.shortcut(x)
+        if collecting:
+            gram_feats.append(self.shortcut(x))
         out = F.relu(out)
+        if collecting:
+            gram_feats.append(out)
         return out
 
 class Bottleneck(nn.Module):
@@ -48,12 +67,30 @@ class Bottleneck(nn.Module):
             )
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = F.relu(self.bn2(self.conv2(out)))
-        out = self.bn3(self.conv3(out))
+        out = self.conv1(x)
+        if collecting:
+            gram_feats.append(out)
+        out = F.relu(self.bn1(out))
+        if collecting:
+            gram_feats.append(out)
+        out = self.conv2(out)
+        if collecting:
+            gram_feats.append(out)
+        out = F.relu(self.bn2(out))
+        if collecting:
+            gram_feats.append(out)
+        out = self.conv3(out)
+        if collecting:
+            gram_feats.append(out)
+        out = self.bn3(out)
+        if collecting:
+            gram_feats.append(out)
         out += self.shortcut(x)
+        if collecting:
+            gram_feats.append(self.shortcut(x))
         out = F.relu(out)
-        return out
+        if collecting:
+            gram_feats.append(out)
 
 class ResNet(nn.Module):
     def __init__(self, block, num_blocks, num_classes=10):
@@ -135,6 +172,64 @@ class ResNet(nn.Module):
         out = out.view(out.size(0), -1)
         y = self.linear(out)
         return y, penultimate
+
+    def gram_feature_list(self,x):
+        global collecting
+        collecting = True
+        global gram_feats
+        gram_feats = []
+        self.forward(x)
+        collecting = False
+        temp = gram_feats
+        gram_feats = []
+        return temp
+  
+    def get_min_max(self, data, power):
+        mins = []
+        maxs = []
+        
+        for i in range(0,len(data),128):
+            batch = data[i:i+128].cuda()
+            feat_list = self.gram_feature_list(batch)
+            for L,feat_L in enumerate(feat_list):
+                if L==len(mins):
+                    mins.append([None]*len(power))
+                    maxs.append([None]*len(power))
+                
+                for p,P in enumerate(power):
+                    g_p = G_p(feat_L,P)
+                    
+                    current_min = g_p.min(dim=0,keepdim=True)[0]
+                    current_max = g_p.max(dim=0,keepdim=True)[0]
+                    
+                    if mins[L][p] is None:
+                        mins[L][p] = current_min
+                        maxs[L][p] = current_max
+                    else:
+                        mins[L][p] = torch.min(current_min,mins[L][p])
+                        maxs[L][p] = torch.max(current_max,maxs[L][p])
+        
+        return mins,maxs
+    
+    def get_deviations(self,data,power,mins,maxs):
+        deviations = []
+        for i in range(0,len(data),128):     
+            batch = data[i:i+128].cuda()
+            feat_list = self.gram_feature_list(batch)
+            batch_deviations = []
+            for L,feat_L in enumerate(feat_list):
+                dev = 0
+                for p,P in enumerate(power):
+                    g_p = G_p(feat_L,P)
+                    
+                    dev +=  (F.relu(mins[L][p]-g_p)/torch.abs(mins[L][p]+10**-6)).sum(dim=1,keepdim=True)
+                    dev +=  (F.relu(g_p-maxs[L][p])/torch.abs(maxs[L][p]+10**-6)).sum(dim=1,keepdim=True)
+                batch_deviations.append(dev.cpu().detach().numpy())
+            batch_deviations = np.concatenate(batch_deviations,axis=1)
+            deviations.append(batch_deviations)
+        deviations = np.concatenate(deviations,axis=0)
+        
+        return deviations
 
 def ResNet18(args):
     return ResNet(BasicBlock, [2,2,2,2], args.num_classes)
