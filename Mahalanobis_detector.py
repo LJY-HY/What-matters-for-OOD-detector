@@ -16,10 +16,6 @@ from utils.arguments import get_Mahalanobis_detector_arguments
 from utils import lib_generation,lib_regression
 from utils.utils import *
 
-from models.MobileNetV2 import *
-from models.ResNet import *
-from models.WideResNet import *
-from models.DenseNet import *
 from models.resnet_big import SupConResNet, LinearClassifier
 from dataset.cifar import *
 from dataset.svhn import *
@@ -50,16 +46,7 @@ def main():
 
     # model setting
     print('load model: '+args.arch)
-    if args.arch in ['MobileNet']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['ResNet18','ResNet34','ResNet50','ResNet101']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['WideResNet28_2','WideResNet28_10','WideResNet40_2','WideResNet40_4']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['DenseNet']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['EfficientNet']:
-        pass
+    net = get_architecture(args)
 
     if args.e_path is not None:
         net = SupConResNet(name='resnet18', num_classes=args.num_classes).to(args.device)
@@ -119,10 +106,11 @@ def main():
         out_dist_list = ['svhn', 'LSUN', 'LSUN_FIX', 'TinyImagenet','TinyImagenet_FIX', 'cifar10']
 
     # if tuning strategy exists, find best magnitude
+    # in this case magnitude is maintained for all benchmark
     if args.tuning_strategy is not 'Original':
         for magnitude in m_list:
             print('Noise: '+str(magnitude))
-            if args.tuning_strategy in ['Aug_Rot','Aug_Perm','G-Odin']:
+            if args.tuning_strategy in ['Aug_Rot','Aug_Perm']:
                 for i in range(num_output):
                     M_in = lib_generation.get_Mahalanobis_score(net, in_dataloader_test, args.num_classes, args.outf, \
                                                                 True, args.arch, sample_mean, precision, i, magnitude)
@@ -149,7 +137,6 @@ def main():
                 file_name = os.path.join(args.outf, 'Mahalanobis_%s_%s_%s.npy' % (str(magnitude), args.in_dataset , args.tuning_strategy))
                 Mahalanobis_data = np.concatenate((Mahalanobis_data, Mahalanobis_labels), axis=1)
                 np.save(file_name, Mahalanobis_data)
-
             elif args.tuning_strategy in ['Adversarial']:
                 test_clean_data, test_adv_data, test_noisy_data, test_label = globals()[args.tuning_strategy](args)
                 for i in range(num_output):
@@ -184,6 +171,34 @@ def main():
                 
                 Mahalanobis_data = np.concatenate((Mahalanobis_data, Mahalanobis_labels), axis=1)
                 np.save(file_name, Mahalanobis_data)
+            # elif args.tuning_strategy in ['G-Odin']:
+            #     for i in range(num_output):
+            #         M_in = lib_generation.get_Mahalanobis_score(net, in_dataloader_test, args.num_classes, args.outf, \
+            #                                                     True, args.arch, sample_mean, precision, i, magnitude)
+            #         M_in = np.asarray(M_in, dtype=np.float32)
+            #         if i == 0:
+            #             Mahalanobis_in = M_in.reshape((M_in.shape[0], -1))
+            #         else:
+            #             Mahalanobis_in = np.concatenate((Mahalanobis_in, M_in.reshape((M_in.shape[0], -1))), axis=1)
+            
+            #     _, out_test_loader = globals()[args.tuning_strategy](args)
+            #     print('Out-distribution: ' + args.tuning_strategy) 
+            #     for i in range(num_output):
+            #         M_out = lib_generation.get_Mahalanobis_score(net, out_test_loader, args.num_classes, args.outf, \
+            #                                                         False, args.arch, sample_mean, precision, i, magnitude)
+            #         M_out = np.asarray(M_out, dtype=np.float32)
+            #         if i == 0:
+            #             Mahalanobis_out = M_out.reshape((M_out.shape[0], -1))
+            #         else:
+            #             Mahalanobis_out = np.concatenate((Mahalanobis_out, M_out.reshape((M_out.shape[0], -1))), axis=1)
+
+            #     Mahalanobis_in = np.asarray(Mahalanobis_in, dtype=np.float32)
+            #     Mahalanobis_out = np.asarray(Mahalanobis_out, dtype=np.float32)
+            #     Mahalanobis_data, Mahalanobis_labels = lib_generation.merge_and_generate_labels(Mahalanobis_out, Mahalanobis_in)
+            #     file_name = os.path.join(args.outf, 'Mahalanobis_%s_%s_%s.npy' % (str(magnitude), args.in_dataset , args.tuning_strategy))
+            #     Mahalanobis_data = np.concatenate((Mahalanobis_data, Mahalanobis_labels), axis=1)
+            #     np.save(file_name, Mahalanobis_data)
+
     
         score_list = ['Mahalanobis_0.0', 'Mahalanobis_0.01', 'Mahalanobis_0.005', 'Mahalanobis_0.002', 'Mahalanobis_0.0014', 'Mahalanobis_0.001', 'Mahalanobis_0.0005']
 

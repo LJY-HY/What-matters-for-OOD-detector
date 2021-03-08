@@ -38,20 +38,8 @@ def main():
     _, in_dataloader = globals()[args.in_dataset](args)    #train_dataloader is not needed
 
     # model setting
-    if args.arch in ['MobileNet']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['ResNet18','ResNet34','ResNet50','ResNet101']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['SupConResNet']:
-        net = globals()[args.arch]().to(args.device)
-        import pdb;pdb.set_trace()
-    elif args.arch in ['WideResNet28_2','WideResNet28_10','WideResNet40_2','WideResNet40_4']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['DenseNet']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['EfficientNet']:
-        pass
-   
+    net = get_architecture(args)
+      
     # optimizer/scheduler setting
     # 이건 SGD이던 Adam이던 상관없음
     optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9, weight_decay=4e-5)

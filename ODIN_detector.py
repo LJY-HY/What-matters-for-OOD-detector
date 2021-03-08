@@ -17,10 +17,6 @@ from utils.arguments import get_ODIN_detector_arguments
 from utils import calMetric
 from utils.utils import *
 
-from models.MobileNetV2 import *
-from models.ResNet import *
-from models.WideResNet import *
-from models.DenseNet import *
 from models.resnet_big import SupConResNet, LinearClassifier
 from dataset.cifar import *
 from dataset.svhn import *
@@ -48,17 +44,8 @@ def main():
     args.outf = args.outf + args.arch + '_' + args.in_dataset+'/'
 
     # model setting/ loading
-    if args.arch in ['MobileNet']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['ResNet18','ResNet34','ResNet50','ResNet101']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['WideResNet28_2','WideResNet28_10','WideResNet40_2','WideResNet40_4']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['DenseNet']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['EfficientNet']:
-        pass
-
+    net = get_architecture(args)
+   
     if args.e_path is not None:
         net = SupConResNet(name='resnet18', num_classes=args.num_classes).to(args.device)
         classifier = LinearClassifier(name='resnet18', num_classes=args.num_classes).to(args.device)

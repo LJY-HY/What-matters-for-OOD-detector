@@ -93,7 +93,6 @@ class Detector:
     def compute_ood_deviations(self,net,ood,POWERS=[10]):
         ood_preds = []
         ood_confs = []
-        
         for idx in range(0,len(ood),128):
             batch = torch.squeeze(torch.stack([x[0] for x in ood[idx:idx+128]]),dim=1).cuda()
             logits = net(batch)
@@ -117,7 +116,6 @@ class Detector:
             ood_confs_PRED =  np.array([ood_confs[i] for i in ood_indices])
             mins = cuda(self.mins[PRED])
             maxs = cuda(self.maxs[PRED])
-            import pdb;pdb.set_trace()
             ood_deviations = net.get_deviations(ood_PRED,power=POWERS,mins=mins,maxs=maxs)/ood_confs_PRED[:,np.newaxis]
             cpu(self.mins[PRED])
             cpu(self.maxs[PRED])            
@@ -126,7 +124,6 @@ class Detector:
             else:
                 all_ood_deviations = np.concatenate([all_ood_deviations,ood_deviations],axis=0)
             torch.cuda.empty_cache()
-        import pdb;pdb.set_trace()
         self.ood_classes = np.array(ood_classes)
         average_results = detect(self.all_test_deviations,all_ood_deviations)
         return average_results, self.all_test_deviations, all_ood_deviations

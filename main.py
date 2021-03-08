@@ -8,6 +8,7 @@ from tqdm import tqdm
 import argparse
 from utils.arguments import get_arguments
 from utils.utils import *
+from dataset.cifar import *
 
 def main():
     # argument parsing

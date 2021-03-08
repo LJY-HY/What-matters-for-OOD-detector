@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.nn.init as init
 from torch.autograd import Variable, grad
-from torchvision import datasets, transforms
+from torchvision import datasets
 from torch.nn.parameter import Parameter
 
 import os
@@ -19,10 +19,7 @@ from utils.arguments import get_Gram_detector_arguments
 from utils.utils import *
 from utils.gram_detector import *
 
-from models.MobileNetV2 import *
-from models.ResNet import *
-from models.WideResNet import *
-from models.DenseNet import *
+from models.ResNet_Gram import *
 from dataset.cifar import *
 from dataset.svhn import *
 from dataset.non_target_data import *
@@ -52,23 +49,14 @@ def main():
     print('load in-distribution data: ', args.in_dataset)
 
     # in-distribution setting
-    in_dataloader_train, in_dataloader_test = globals()[args.in_dataset](args)    
     data_train, data = globals()[args.in_dataset](args, train_TF = get_transform(args.in_dataset,'test'), test_TF = get_transform(args.in_dataset,'test'))
-        
+    data_train = list(torch.utils.data.DataLoader(data_train.dataset, batch_size = 1, shuffle = False))
+    data = list(torch.utils.data.DataLoader(data.dataset,batch_size = 1, shuffle = False))
+    
     # model setting
     print('load model: '+args.arch)
-    args.detect_mode = 'Gram'
-    if args.arch in ['MobileNet']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['ResNet18','ResNet34','ResNet50','ResNet101']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['WideResNet28_2','WideResNet28_10','WideResNet40_2','WideResNet40_4']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['DenseNet']:
-        net = globals()[args.arch](args).to(args.device)
-    elif args.arch in ['EfficientNet']:
-        pass
-    
+    net = globals()[args.arch+'_Gram'](args).to(args.device)
+
     # optimizer/scheduler setting
     optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=4e-5)
        
@@ -120,9 +108,6 @@ def main():
 
     # Detecting OODs by identifying anomalies in correlations
     detector = Detector(args)    
-    test_TF = get_transform(args.in_dataset, 'test')
-    data_train = list(torch.utils.data.DataLoader(datasets.CIFAR10('data', train=True, download=True, transform=test_TF), batch_size=1, shuffle=False))
-    data = list(torch.utils.data.DataLoader(datasets.CIFAR10('data', train=False, download=True, transform=test_TF), batch_size=1, shuffle=False))
     detector.compute_minmaxs(net, data_train, train_preds, POWERS=range(1,11))
     detector.compute_test_deviations(net, data,test_preds, test_confs, POWERS=range(1,11))
     for out in out_dist_list:
