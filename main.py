@@ -32,10 +32,10 @@ def main():
        
     CE_loss = nn.CrossEntropyLoss()
     training = ''
-    if args.refinement is 'label_smoothing':
+    if args.refinement == 'label_smoothing':
         training = 'ls_'
         CE_loss = LabelSmoothingLoss(classes=args.num_classes, smoothing=0.05)
-    elif args.refinement is 'mixup':
+    elif args.refinement == 'mixup':
         training = 'mixup_'
     path = './checkpoint/'+args.in_dataset+'/'+training+args.arch+'_'+str(args.epoch)+'_'+str(args.batch_size)+'_'+args.optimizer+'_'+args.scheduler+'_'+str(args.lr)[2:]+'_trial_'+args.trial
     best_acc=0
@@ -56,7 +56,7 @@ def train(args, net, train_dataloader, optimizer, scheduler, CE_loss, epoch):
     loss_average = 0
     for batch_idx, (inputs, targets) in enumerate(train_dataloader):
         inputs, targets = inputs.to(args.device), targets.to(args.device)     
-        if args.refinement is 'mixup':
+        if args.refinement == 'mixup':
             inputs, targets_a, targets_b, lam = mixup_data(args, inputs, targets)
             inputs, targets_a, targets_b = map(Variable, (inputs, targets_a, targets_b))
             outputs = net(inputs)
