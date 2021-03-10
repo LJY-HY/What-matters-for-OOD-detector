@@ -19,7 +19,6 @@ from utils.arguments import get_Gram_detector_arguments
 from utils.utils import *
 from utils.gram_detector import *
 
-from models.ResNet_Gram import *
 from dataset.cifar import *
 from dataset.svhn import *
 from dataset.non_target_data import *
@@ -55,7 +54,7 @@ def main():
     
     # model setting
     print('load model: '+args.arch)
-    net = globals()[args.arch+'_Gram'](args).to(args.device)
+    net = globals()[args.arch](args).to(args.device)
 
     # optimizer/scheduler setting
     optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=4e-5)
