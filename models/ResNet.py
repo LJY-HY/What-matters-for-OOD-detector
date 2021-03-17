@@ -92,6 +92,7 @@ class Bottleneck(nn.Module):
         out = self.act_func(out)
         if collecting:
             gram_feats.append(out)
+        return out
 
 class ResNet(nn.Module):
     def __init__(self, block, num_blocks, num_classes=10, act_func='relu'):
@@ -102,6 +103,8 @@ class ResNet(nn.Module):
             self.act_func = nn.ReLU()
         elif act_func == 'gelu':
             self.act_func = nn.GELU()
+        elif act_func == 'silu':
+            self.act_func = nn.SiLU()
         elif act_func == 'leaky_relu':
             self.act_func = nn.LeakyReLU()
         elif act_func == 'softplus':

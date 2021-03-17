@@ -90,12 +90,15 @@ class Detector:
         self.all_test_deviations = all_test_deviations
         self.test_classes = np.array(test_classes)
     
-    def compute_ood_deviations(self,net,ood,POWERS=[10]):
+    def compute_ood_deviations(self,net,ood,args,POWERS=[10], classifier=None):
         ood_preds = []
         ood_confs = []
         for idx in range(0,len(ood),128):
             batch = torch.squeeze(torch.stack([x[0] for x in ood[idx:idx+128]]),dim=1).cuda()
-            logits = net(batch)
+            if args.e_path is None:
+                logits = net(batch)
+            else:
+                logits = classifier(net.encoder(batch))
             confs = F.softmax(logits,dim=1).cpu().detach().numpy()
             preds = np.argmax(confs,axis=1)
             
