@@ -73,7 +73,7 @@ def train(args, net, train_dataloader, optimizer, scheduler, CE_loss, epoch):
                     epochs=args.epoch,
                     batch=batch_idx + 1,
                     iter=train_dataloader.__len__(),
-                    lr=scheduler.get_last_lr()[0],
+                    lr=scheduler.optimizer.param_groups[0]['lr'],
                     loss = train_loss/(batch_idx+1))
                     )
         p_bar.update()
@@ -96,7 +96,7 @@ def test(args, net, test_dataloader, optimizer, scheduler, CE_loss, epoch):
                     epochs=1,
                     batch=batch_idx + 1,
                     iter=test_dataloader.__len__(),
-                    lr=scheduler.get_last_lr()[0],
+                    lr=scheduler.optimizer.param_groups[0]['lr'],
                     loss=test_loss/(batch_idx+1)))
             p_bar.update()
             acc+=sum(outputs.argmax(dim=1)==targets)

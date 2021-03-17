@@ -12,7 +12,7 @@ def get_arguments():
     parser.add_argument('--dropout_rate', default=0, type=float, choices=[0,0.3,0.5,0.7])
     parser.add_argument('--scheduler', default='MultiStepLR', type=str, choices=['MultiStepLR','CosineAnnealing','CosineWarmup'])
     parser.add_argument('--wd', '--weight_decay','--wdecay', default=5e-4, type=float, choices=[5e-4,1e-2,1e-3,1e-4,1e-6])
-    parser.add_argument('--warmup',action='store_true')
+    parser.add_argument('--warmup_duration', default = 10, help = 'duration of warming up')
     parser.add_argument('--BN','--batch_normalization',action='store_false')
     parser.add_argument('--refinement', type=str, choices=['label_smoothing','mixup'])
     parser.add_argument('--act_func', default='relu', type=str, choices=['relu','gelu','silu','leaky_relu','softplus'])
