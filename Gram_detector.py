@@ -57,6 +57,7 @@ def main():
     print('load model: '+args.arch)
     net = globals()[args.arch](args).to(args.device)
 
+    classifier = None
     if args.e_path is not None:
         net = SupConResNet(name='resnet18', num_classes=args.num_classes).to(args.device)
         classifier = LinearClassifier(name='resnet18', num_classes=args.num_classes).to(args.device)
