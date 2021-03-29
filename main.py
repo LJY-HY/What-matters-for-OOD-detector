@@ -10,6 +10,7 @@ import argparse
 from utils.arguments import get_arguments
 from utils.utils import *
 from dataset.cifar import *
+from dataset.svhn import *
 
 def main():
     # argument parsing

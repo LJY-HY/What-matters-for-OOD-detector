@@ -7,14 +7,14 @@ import torchvision.transforms as transforms
 import os
 from tqdm import tqdm
 import argparse
-from utils.arguments import get_arguments
+from utils.arguments import get_kd_arguments
 from utils.utils import *
 from dataset.cifar import *
 
 def main():
     # argument parsing
     args = argparse.ArgumentParser()
-    args = get_arguments()
+    args = get_kd_arguments()
     args.device = torch.device('cuda',args.gpu_id)
 
     # dataset setting
